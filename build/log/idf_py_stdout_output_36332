@@ -1,2 +1,0 @@
-Command: C:\Users\janh\.espressif\python_env\idf5.5_py3.13_env\Scripts\python.exe C:\esp\v5.5.2\esp-idf\tools/idf_monitor.py -p COM4 -b 115200 --toolchain-prefix riscv32-esp-elf- --target esp32p4 --revision 1 --decode-panic backtrace C:\opt\src\catflapcam\build\catflapcam.elf C:\opt\src\catflapcam\build\bootloader\bootloader.elf --force-color -m 'C:\Users\janh\.espressif\python_env\idf5.5_py3.13_env\Scripts\python.exe' 'C:\esp\v5.5.2\esp-idf\tools\idf.py' '-p' 'COM4'
-could not open port '\\\\.\\COM4': PermissionError(13, 'Access is denied.', None, 5)

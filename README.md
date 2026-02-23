@@ -1,168 +1,53 @@
-# catflapcam Bring-Up and Debug Writeup
+# catflapcam
 
-This document explains how the project reached a stable state with all three working together:
-- SD card snapshot storage
-- Serial monitor/debug workflow on COM4
-- Wi-Fi networking (ESP-Hosted path)
+`catflapcam` is an ESP-IDF firmware project for ESP32-P4 camera systems with:
+- Wi-Fi web streaming
+- local SD-card snapshot capture
+- ring-buffered snapshot retention
+- OTA firmware updates with password auth
+- optional ultrasonic-triggered snapshot capture
 
-It is written as a practical runbook so future changes can be debugged quickly.
+The design goal is reliable edge capture first: snapshots are saved locally and served directly from the device.
 
-## 1) Platform and Reality Checks
+## Target Platform
 
-Target hardware path used in this project:
-- Main MCU: ESP32-P4
-- Wi-Fi link: ESP-Hosted over SDIO to C6 side
-- Local storage: microSD card (currently 64GB)
-- Serial port: COM4
+- MCU: ESP32-P4
+- Camera stack: `esp_video` + V4L2-style capture path
+- Network: Wi-Fi (no Ethernet path)
+- Storage: SD card via SDMMC + FATFS (`/sdcard/snapshots`)
+- Web server: `esp_http_server`
 
-Important practical constraints observed:
-- Wi-Fi and SD card both involve SDMMC resources, so slot selection/order matters.
-- If COM4 is already owned by another monitor process, flashing/monitoring fails until that process is closed.
-- ESP-IDF on this project uses FATFS for SD storage; on-device F2FS formatting/mounting is not provided by ESP-IDF components used here.
+## Core Features
 
-## 2) Why SD Card Initially Failed
+- MJPEG stream endpoint per camera source (`/stream` on source ports)
+- Manual snapshot trigger from web UI (`/api/capture_image?source=<idx>`)
+- Snapshot storage ring (`CATFLAPCAM_SNAPSHOT_MAX_FILES`)
+- Timestamped snapshot filenames
+- Snapshot gallery page with delete support (`/snapshots`)
+- OTA endpoint with constant-time password check (`/api/ota`)
+- mDNS and NetBIOS name advertisement
 
-Typical failure looked like SD init/mount timeouts (e.g. `ESP_ERR_TIMEOUT`).
-Root causes were a combination of:
-- SDIO resource overlap assumptions between hosted Wi-Fi and SD card
-- Initialization order and slot selection
-- Power/voltage behavior on this board path
+## Project Layout
 
-What was validated during debugging:
-1. Hosted Wi-Fi path uses SDIO resources that can conflict with bad slot choice.
-2. Probing the wrong slot at the wrong time can destabilize hosted startup.
-3. A stable configuration is:
-   - keep hosted path where expected
-   - mount user SD card on the compatible slot for this board config
-   - use on-chip LDO support when required by board wiring/power behavior
+- `main/main.c`: system bootstrap (NVS, netif/event loop, Wi-Fi, video, storage, HTTP, ultrasonic)
+- `main/catflapcam_webcam.c`: camera capture, snapshot pipeline, JPEG encoding
+- `main/catflapcam_storage.c`: SD mount, ring retention, list/resolve/delete snapshot files
+- `main/catflapcam_http_server.c`: static UI, stream, snapshot, and OTA routes
+- `main/catflapcam_ultrasonic.c`: HC-SR04 trigger task (optional)
+- `main/include/catflapcam_config.example.h`: local runtime configuration template
+- `partitions.csv`: OTA partition layout (`ota_0` / `ota_1`)
 
-## 3) SD Card Working Configuration
+## Configuration
 
-The storage implementation now:
-- Mounts SD card at `/sdcard`
-- Uses `FATFS` + SDMMC host path
-- Stores snapshots under `/sdcard/snapshots`
-- Maintains a ring policy (`CATFLAPCAM_SNAPSHOT_MAX_FILES`) so oldest files are removed first when full
-
-Relevant config flags in local config:
-- `CATFLAPCAM_SDCARD_ENABLE`
-- `CATFLAPCAM_SDCARD_SLOT`
-- `CATFLAPCAM_SDCARD_BUS_WIDTH`
-- `CATFLAPCAM_SDCARD_MAX_FREQ_KHZ`
-- `CATFLAPCAM_SDCARD_FORMAT_IF_MOUNT_FAILED`
-- `CATFLAPCAM_SNAPSHOT_MAX_FILES`
-- `CATFLAPCAM_SDCARD_USE_INTERNAL_LDO`
-- `CATFLAPCAM_SDCARD_LDO_ID`
-
-Notes:
-- Start conservative on frequency if card behavior is unstable, then raise gradually.
-- Keep bus width aligned with actual board wiring (1-bit vs 4-bit).
-- Auto-format on mount failure is optional and intentionally explicit.
-
-## 4) Snapshot Save + Web Serving Flow
-
-Current data flow after trigger/capture:
-1. Camera capture happens in webcam path.
-2. JPEG bytes are saved to SD snapshot directory.
-3. HTTP APIs expose list and files.
-4. Gallery page (`/snapshots`) renders thumbnails/images from those saved files.
-
-Implemented endpoints:
-- `GET /api/snapshots?limit=N` -> JSON list
-- `GET /snapshots/<filename>` -> JPEG file
-- `GET /snapshots` -> gallery page
-
-Broken image issue that was fixed:
-- Gallery had URL/query behavior that did not match file-serving route assumptions.
-- Result: image tags rendered but browser got invalid responses.
-- Fix: simplified URL handling and cache behavior so gallery requests map directly to valid file responses.
-
-## 5) COM4 Monitoring and Debug Workflow
-
-### Practical operating model
-
-The monitor workflow was hardened so development is fast and repeatable:
-- Before flash/monitor, close stale process that owns COM4.
-- Use short monitor sessions for bring-up verification.
-- Stop monitor automatically after startup stabilizes (3 seconds idle), unless crash loop is detected.
-
-Crash-loop optimization:
-- If logs clearly show panic/reset loop, do not wait for quiet timeout; stop immediately and iterate.
-
-### Why this matters
-
-Without this process:
-- Flash can fail due to COM4 lock contention.
-- Diagnosis slows down because logs are noisy and long-running.
-
-With this process:
-- Faster flash-debug cycles
-- Deterministic startup validation
-- Immediate attention to fatal loops
-
-## 6) Wi-Fi Stability Decisions
-
-Key fixes/choices for networking reliability:
-- Removed Ethernet dependency paths for this project (Wi-Fi-only device intent)
-- Kept reconnect handling practical (avoid tight loops)
-- Preserved useful logs at boundaries (init, reconnect, fail states)
-- Kept monitor-visible startup milestones for rapid triage
-
-Critical lesson from earlier crash:
-- Ethernet init path in example code caused `ESP_ERR_TIMEOUT` and panic (`ESP_ERROR_CHECK`) on this hardware intent.
-- Removing non-required Ethernet path eliminated that class of failure.
-
-## 7) UART/Flash Concurrency Guard
-
-Enabled:
-- `CONFIG_UART_ISR_IN_IRAM=y`
-
-Reason:
-- Reduces risk when UART logging/traffic coincides with flash/critical timing paths, especially under stress scenarios.
-
-## 8) Current Known Behavior and Warnings
-
-Observed warning:
-- `spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k)`
-
-Meaning:
-- Binary header flash size config mismatch; runtime uses header value.
-- Not an immediate blocker, but should be aligned with intended flash configuration to avoid capacity/partition confusion.
-
-Observed reset reason logging is enabled and useful:
-- Startup logs include reset reason values to speed root-cause analysis after crashes/brownouts.
-
-## 9) Recommended Day-to-Day Bring-Up Sequence
-
-1. Confirm local config exists:
-   - `main/include/catflapcam_config.h`
-2. Build:
-   - `idf.py build`
-3. Flash:
-   - `idf.py -p COM4 flash`
-4. Monitor startup only:
-   - run monitor, stop after 3s inactivity (or stop immediately on reset loop)
-5. Validate runtime quickly:
-   - web UI loads
-   - stream works
-   - capture triggers snapshot save
-   - `/snapshots` gallery renders real images
-6. If SD issues appear:
-   - lower SD freq
-   - verify slot/bus width config
-   - verify card format and mount flags
-
-## 10) Local Config Header (Kept Out of Git)
-
-`main/include/catflapcam_config.h` is intentionally local-only.
-
-Create from template:
+Create a local config header:
 
 ```bash
 cp main/include/catflapcam_config.example.h main/include/catflapcam_config.h
 ```
 
-Set at minimum:
+`catflapcam_config.h` is local-only and should not be committed.
+
+Required fields:
 
 ```c
 #define CATFLAPCAM_WIFI_SSID "your-ssid"
@@ -170,17 +55,55 @@ Set at minimum:
 #define CATFLAPCAM_OTA_PASSWORD "your-ota-password"
 ```
 
-And tune SD values for your board/card stability.
+Key snapshot/storage tuning:
 
-## 11) OTA Quick Reference
+```c
+#define CATFLAPCAM_SNAPSHOT_MAX_FILES 20000
+#define CATFLAPCAM_SNAPSHOT_WIDTH 224
+#define CATFLAPCAM_SNAPSHOT_HEIGHT 224
+#define CATFLAPCAM_SNAPSHOT_JPEG_QUALITY 100
+#define CATFLAPCAM_SDCARD_SLOT 0
+#define CATFLAPCAM_SDCARD_BUS_WIDTH 4
+#define CATFLAPCAM_SDCARD_MAX_FREQ_KHZ 20000
+```
 
-Endpoint:
-- `POST /api/ota`
+## Build and Flash
 
-Auth header:
-- `X-OTA-Password: <CATFLAPCAM_OTA_PASSWORD>`
+```bash
+idf.py build
+idf.py -p COM4 flash
+idf.py -p COM4 monitor
+```
 
-Example:
+If serial monitor locks the port, close the stale monitor process before flashing.
+
+## HTTP API
+
+- `GET /`  
+  Main web UI.
+
+- `GET /api/get_camera_info`  
+  Camera metadata and stream source info.
+
+- `GET /api/capture_image?source=<index>`  
+  Captures one frame and stores it as a snapshot on SD.
+
+- `GET /api/snapshots?limit=<n>`  
+  Returns JSON list of latest snapshots.
+
+- `GET /snapshots`  
+  Snapshot gallery page.
+
+- `GET /snapshots/<filename>`  
+  Serves one snapshot JPEG.
+
+- `DELETE /api/snapshots/<filename>`  
+  Deletes a snapshot from SD.
+
+- `POST /api/ota`  
+  OTA update endpoint. Requires `X-OTA-Password` header.
+
+## OTA Update
 
 ```bash
 curl -X POST \
@@ -189,15 +112,37 @@ curl -X POST \
   http://<device-ip>/api/ota
 ```
 
-Expected:
-- wrong/missing password -> `401`
-- valid upload -> `OK` then reboot
+Expected responses:
+- `401 Unauthorized`: missing/invalid password
+- `OK`: image accepted; device reboots into new OTA slot
 
-## 12) Bottom Line
+## Storage Behavior
 
-The project is now operating with:
-- Stable Wi-Fi bring-up (without unrelated Ethernet failure paths)
-- Stable SD snapshot persistence and retrieval
-- Practical, fast COM4 debug loops
+- Snapshots are stored in `/sdcard/snapshots`.
+- Filenames include a monotonic sequence + local timestamp for easier inspection.
+- Retention is a ring by file count (`CATFLAPCAM_SNAPSHOT_MAX_FILES`).
+- Oldest snapshots are evicted automatically when the limit is reached.
 
-The key to success was treating SD, Wi-Fi, and monitor access as one integrated system: slot/resource correctness, init order, and disciplined serial workflow.
+Note: this firmware uses FATFS for SD cards in ESP-IDF. F2FS/LittleFS are not used for the SD snapshot path.
+
+## Reliability Notes
+
+- Wi-Fi-first runtime (Ethernet path removed).
+- NVS recovery handles `ESP_ERR_NVS_NO_FREE_PAGES` and `ESP_ERR_NVS_NEW_VERSION_FOUND`.
+- Startup logs include reset reason.
+- `CONFIG_UART_ISR_IN_IRAM=y` is recommended for robust logging/flash concurrency on ESP32 targets.
+- Capture path prioritizes snapshot operations over stream when required.
+
+## Troubleshooting
+
+- `spi_flash: Detected size ... larger than the size in the binary image header ...`  
+  Align flash-size config and image header settings to your board.
+
+- SD mount failures/timeouts  
+  Check `CATFLAPCAM_SDCARD_SLOT`, bus width, clock, pull-ups, and board power/LDO setup.
+
+- OTA rejected  
+  Verify `CATFLAPCAM_OTA_PASSWORD` and request header `X-OTA-Password`.
+
+- Snapshot gallery issues  
+  Confirm SD storage is mounted and `/api/snapshots` returns valid JSON.

@@ -1,9 +1,0 @@
-Command: C:\Users\janh\.espressif\python_env\idf5.5_py3.13_env\Scripts\python.exe C:\esp\v5.5.2\esp-idf\tools/idf_monitor.py -p COM4 -b 115200 --toolchain-prefix riscv32-esp-elf- --target esp32p4 --revision 1 --decode-panic backtrace C:\opt\src\catflapcam\build\catflapcam.elf C:\opt\src\catflapcam\build\bootloader\bootloader.elf --force-color -m 'C:\Users\janh\.espressif\python_env\idf5.5_py3.13_env\Scripts\python.exe' 'C:\esp\v5.5.2\esp-idf\tools\idf.py' '-p' 'COM4'
-[0;33m--- Warning: GDB cannot open serial ports accessed as COMx[0m
-[0;33m--- Using \\.\COM4 instead...[0m
-[0;33m--- esp-idf-monitor 1.9.0 on \\.\COM4 115200[0m
-[0;33m--- Quit: Ctrl+] | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H[0m
-[0;33m--- Connection to \\.\COM4 failed. Available ports:
---- COM4
---- COM3[0m
-[0m

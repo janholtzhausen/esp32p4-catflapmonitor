@@ -1,1 +1,6 @@
 main/include/catflapcam_config.h
+
+# ESP-IDF build outputs
+build/
+build-*/
+build-port-*/
