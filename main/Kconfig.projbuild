@@ -1,8 +1,8 @@
-menu "Example Configuration"
+menu "Catflapcam Configuration"
     
-    config EXAMPLE_CAMERA_VIDEO_BUFFER_NUMBER
+    config CATFLAPCAM_CAMERA_VIDEO_BUFFER_NUMBER
         int "Camera video buffer number"
-        default 2
+        default 3
         help
             Number of video buffers for the camera sensor.
             
@@ -13,9 +13,9 @@ menu "Example Configuration"
             - 3-4 buffers: Better performance for smooth streaming
             - Higher values: May improve performance but increase memory usage
 
-    config EXAMPLE_JPEG_COMPRESSION_QUALITY
+    config CATFLAPCAM_JPEG_COMPRESSION_QUALITY
         int "JPEG compression quality (%)"
-        default 80
+        default 95
         range 1 100
         help
             JPEG compression quality percentage (1-100).
@@ -31,7 +31,7 @@ menu "Example Configuration"
 
             Recommended: 80 for balanced quality and performance.
 
-    config EXAMPLE_HTTP_PART_BOUNDARY
+    config CATFLAPCAM_HTTP_PART_BOUNDARY
         string "HTTP part boundary"
         default "123456789000000000000987654321"
         help
@@ -41,7 +41,7 @@ menu "Example Configuration"
             Must be unique and not appear in the video data. The default value
             is designed to be unique and safe for most applications.
     
-    config EXAMPLE_MDNS_INSTANCE
+    config CATFLAPCAM_MDNS_INSTANCE
         string "mDNS instance"
         default "web-cam"
         help
@@ -51,7 +51,7 @@ menu "Example Configuration"
             Other devices can discover this camera using this instance name
             through mDNS/Bonjour protocols.
     
-    config EXAMPLE_MDNS_HOST_NAME
+    config CATFLAPCAM_MDNS_HOST_NAME
         string "mDNS host name"
         default "esp-web"
         help
@@ -60,4 +60,52 @@ menu "Example Configuration"
             This hostname will be used for network identification and can be
             accessed as "esp-web.local" on the local network (if mDNS is supported
             by the client device).
+
+    config CATFLAPCAM_ULTRASONIC_TRIGGER_ENABLE
+        bool "Enable ultrasonic trigger snapshot capture"
+        default n
+        help
+            Enable distance-based automatic image capture/snapshot save using an HC-SR04 style
+            ultrasonic sensor. When enabled, the firmware periodically measures distance and
+            triggers /api/capture_image behavior when an object comes near.
+
+    config CATFLAPCAM_ULTRASONIC_TRIG_GPIO
+        int "Ultrasonic TRIG GPIO"
+        default 4
+        depends on CATFLAPCAM_ULTRASONIC_TRIGGER_ENABLE
+        help
+            GPIO connected to the sensor TRIG pin.
+
+    config CATFLAPCAM_ULTRASONIC_ECHO_GPIO
+        int "Ultrasonic ECHO GPIO"
+        default 5
+        depends on CATFLAPCAM_ULTRASONIC_TRIGGER_ENABLE
+        help
+            GPIO connected to the sensor ECHO pin.
+
+    config CATFLAPCAM_ULTRASONIC_TRIGGER_DISTANCE_CM
+        int "Ultrasonic trigger distance (cm)"
+        default 30
+        range 2 400
+        depends on CATFLAPCAM_ULTRASONIC_TRIGGER_ENABLE
+        help
+            Auto-capture is triggered when measured distance is less than or equal to this value.
+
+    config CATFLAPCAM_ULTRASONIC_MIN_INTERVAL_MS
+        int "Minimum interval between ultrasonic captures (ms)"
+        default 3000
+        range 250 60000
+        depends on CATFLAPCAM_ULTRASONIC_TRIGGER_ENABLE
+        help
+            Debounce interval to avoid repeated captures while an object remains in range.
+
+    config CATFLAPCAM_ULTRASONIC_SOURCE_INDEX
+        int "Camera index used by ultrasonic trigger"
+        default 0
+        range 0 3
+        depends on CATFLAPCAM_ULTRASONIC_TRIGGER_ENABLE
+        help
+            Camera source index used for automatic captures.
 endmenu
+
+
