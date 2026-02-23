@@ -1,5 +1,35 @@
 # Changelog
 
+## 2.11.7
+
+### Features
+
+* Added Co-processor Memory Monitor: sets up a heap memory monitor on the co-processor that periodically checks the amount of heap memory remaining. Co-processor sends memory info events to the host at periodic intervals or when heap memory falls below memory thresholds set by the host.
+* Added `examples/host_hosted_cp_meminfo` as an example:
+  - make a one time request of heap memory
+  - request periodic memory reports
+  - get a report only when heap memory falls below a threshold
+
+### API Added
+
+* `esp_hosted_set_mem_monitor`
+
+### Event Added
+
+* `ESP_HOSTED_EVENT_MEM_MONITOR`
+
+### Documentation
+
+Added performance with ESP32-C3 as co-processor, using SPI-FD interface, to Performance document.
+
+## 2.11.6
+
+* Fix a build break on ESP-IDF master branch
+* Add `ESP_HOSTED_WIFI_AUTO_CONNECT_ON_STA_START` to control whether WiFi station auto-connects on STA start on both host and slave sides. This allows disabling auto-connect to align behavior with standard ESP-IDF examples and avoids unintended connection attempts during initialization.
+* Made FreeRTOS runtime stats logging optional
+* Added option to allow slave to reuse application-created STA netif handle instead of creating its own handle
+* Added option to disable sharing Bluetooth with Host, for cases where BT is only required on the co-processor
+
 ## 2.11.5
 
 ### Bug Fix

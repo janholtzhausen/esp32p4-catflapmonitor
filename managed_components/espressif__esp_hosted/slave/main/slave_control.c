@@ -75,6 +75,9 @@ static wifi_config_t new_wifi_config = {0};
 static bool new_config_recvd = false;
 static bool suppress_disconnect = false; // true when we want to suppress the disconnect event
 static wifi_event_sta_connected_t lkg_sta_connected_event = {0};
+#ifdef CONFIG_ESP_HOSTED_WIFI_AUTO_CONNECT_ON_STA_DISCONNECT
+static int s_wifi_reconnect_retries = 0;
+#endif
 
 enum {
 	OTA_NOT_STARTED,
@@ -83,6 +86,29 @@ enum {
 	OTA_COMPLETED,
 	OTA_ACTIVATED,
 };
+
+#ifdef CONFIG_ESP_HOSTED_MEM_MONITOR
+// structures for mem monitor event
+typedef struct {
+	uint32_t internal_mem_dma;
+	uint32_t internal_mem_8bit;
+	uint32_t external_mem_dma;
+	uint32_t external_mem_8bit;
+} mem_monitor_params_t;
+
+typedef struct {
+	uint32_t total_free_heap_size;
+	uint32_t min_free_heap_size;
+	mem_monitor_params_t free_size;
+	mem_monitor_params_t largest_free_block;
+} mem_monitor_event_t;
+
+// static variables for mem monitor
+static TimerHandle_t mem_monitor_timer_handle = NULL;
+static mem_monitor_params_t mem_monitor_params = { 0 };
+static bool mem_monitor_report_always = false;
+static uint32_t mem_monitor_interval_sec = 0;
+#endif
 
 uint8_t ota_status = OTA_NOT_STARTED;
 
@@ -887,9 +913,9 @@ static void event_handler_wifi(void* arg, esp_event_base_t event_base,
 			send_event_data_to_host(RPC_ID__Event_StaScanDone,
 					event_data, sizeof(wifi_event_sta_scan_done_t));
 		} else if (event_id == WIFI_EVENT_STA_CONNECTED) {
-			ESP_LOGI(TAG, "Sta mode connected");
+			ESP_LOGW(TAG, "Sta mode connected");
 			if (new_config_recvd) {
-				ESP_LOGI(TAG, "New wifi config still unapplied, applying it");
+				ESP_LOGW(TAG, "New wifi config still unapplied, applying it");
 				/* Still not applied new config, so apply it */
 				int ret = esp_wifi_set_config(WIFI_IF_STA, &new_wifi_config);
 				if (ret) {
@@ -901,37 +927,61 @@ static void event_handler_wifi(void* arg, esp_event_base_t event_base,
 				return;
 			}
 			station_connecting = false;
+#ifdef CONFIG_ESP_HOSTED_WIFI_AUTO_CONNECT_ON_STA_DISCONNECT
+			s_wifi_reconnect_retries = 0;
+#endif
 			send_event_data_to_host(RPC_ID__Event_StaConnected,
 				event_data, sizeof(wifi_event_sta_connected_t));
 			memcpy(&lkg_sta_connected_event, event_data, sizeof(wifi_event_sta_connected_t));
 			esp_wifi_internal_reg_rxcb(WIFI_IF_STA, (wifi_rxcb_t) wlan_sta_rx_callback);
 			station_connected = true;
-		} else if (event_id == WIFI_EVENT_STA_DISCONNECTED) {
-			ESP_LOGI(TAG, "Sta mode disconnect");
-			if (new_config_recvd) {
-				ESP_LOGI(TAG, "New wifi config still unapplied, applying it");
-				/* Still not applied new config, so apply it */
-				int ret = esp_wifi_set_config(WIFI_IF_STA, &new_wifi_config);
-				if (ret) {
-					ESP_LOGE(TAG, "Error[0x%x] while setting the wifi config", ret);
-				} else {
-					new_config_recvd = false;
-				}
-				station_connecting = true;
-				esp_wifi_connect();
-			}
-			station_connected = false;
-			esp_wifi_internal_reg_rxcb(WIFI_IF_STA, NULL);
-			station_connecting = false;
-			if (!suppress_disconnect) {
-				send_event_data_to_host(RPC_ID__Event_StaDisconnected,
-					event_data, sizeof(wifi_event_sta_disconnected_t));
-				wifi_event_sta_disconnected_t *ptr = (wifi_event_sta_disconnected_t *)event_data;
-				ESP_LOGI(TAG, "disconnect due to reason: %d", ptr->reason);
+	} else if (event_id == WIFI_EVENT_STA_DISCONNECTED) {
+		ESP_LOGW(TAG,  "Sta mode disconnected");
+		bool reconnect_pending = false;
+
+		if (new_config_recvd) {
+			ESP_LOGI(TAG, "New wifi config still unapplied, applying it");
+			/* Still not applied new config, so apply it */
+			int ret = esp_wifi_set_config(WIFI_IF_STA, &new_wifi_config);
+			if (ret) {
+				ESP_LOGE(TAG, "Error[0x%x] while setting the wifi config", ret);
 			} else {
-				ESP_LOGI(TAG, "suppressing disconnect event due to new config");
-				suppress_disconnect = false;
+				new_config_recvd = false;
+				reconnect_pending = true;
 			}
+		}
+
+		station_connected = false;
+		esp_wifi_internal_reg_rxcb(WIFI_IF_STA, NULL);
+
+		/* Only reset station_connecting if not reconnecting with new config */
+		if (reconnect_pending) {
+			station_connecting = true;
+			ESP_LOGW(TAG, "Triggering connect as reconnect_pending");
+			esp_wifi_connect();
+		} else {
+			station_connecting = false;
+		}
+
+		if (!suppress_disconnect) {
+			send_event_data_to_host(RPC_ID__Event_StaDisconnected,
+				event_data, sizeof(wifi_event_sta_disconnected_t));
+			wifi_event_sta_disconnected_t *ptr = (wifi_event_sta_disconnected_t *)event_data;
+			ESP_LOGI(TAG, "disconnect due to reason: %d", ptr->reason);
+#ifdef CONFIG_ESP_HOSTED_WIFI_AUTO_CONNECT_ON_STA_DISCONNECT
+			if (s_wifi_reconnect_retries < CONFIG_ESP_HOSTED_WIFI_AUTO_RECONNECT_MAX_RETRY) {
+				ESP_LOGI(TAG, "Auto-reconnecting to WiFi, attempt %d", s_wifi_reconnect_retries + 1);
+				esp_wifi_connect();
+				s_wifi_reconnect_retries++;
+			} else {
+				ESP_LOGE(TAG, "Max auto-reconnect retries reached, reset retry count");
+				s_wifi_reconnect_retries = 0;
+			}
+#endif
+		} else {
+			ESP_LOGW(TAG, "Suppressing disconnect event due to new config");
+			suppress_disconnect = false;
+		}
 #if CONFIG_SOC_WIFI_HE_SUPPORT
 		} else if (event_id == WIFI_EVENT_ITWT_SETUP) {
 			ESP_LOGI(TAG, "Itwt Setup");
@@ -988,8 +1038,11 @@ static void event_handler_wifi(void* arg, esp_event_base_t event_base,
 			} else if (event_id == WIFI_EVENT_STA_START) {
 				if (!station_connecting) {
 					ESP_LOGI(TAG, "sta started");
+#ifdef CONFIG_ESP_HOSTED_WIFI_AUTO_CONNECT_ON_STA_START
+					ESP_LOGW(TAG, "Triggering auto connect on sta start");
 					station_connecting = true;
 					esp_wifi_connect();
+#endif
 					send_event_data_to_host(RPC_ID__Event_WifiEventNoArgs,
 							&event_id, sizeof(event_id));
 				}
@@ -1339,7 +1392,7 @@ esp_err_t __wrap_esp_wifi_init(const wifi_init_config_t *config)
 	if (wifi_initialized) {
 		/* Compare with cached config */
 		if (has_cached_config && wifi_init_config_changed(config, &cached_wifi_init_config)) {
-			ESP_LOGI(TAG, "WiFi init config changed, reinitializing");
+			ESP_LOGW(TAG, "WiFi init config changed, reinitializing");
 			esp_wifi_stop();
 			esp_wifi_deinit();
 			wifi_initialized = false;
@@ -1497,7 +1550,9 @@ static esp_err_t req_wifi_connect(Rpc *req, Rpc *resp, void *priv_data)
 			RpcReqWifiConnect, req_wifi_connect,
 			rpc__resp__wifi_connect__init);
 
-	// Check if WiFi config has valid SSID before attempting connection
+
+
+	/* Get current config to validate SSID */
 	if (esp_wifi_get_config(WIFI_IF_STA, &wifi_cfg) != ESP_OK) {
 		ESP_LOGE(TAG, "Failed to get WiFi config");
 		resp_payload->resp = ESP_ERR_WIFI_NOT_INIT;
@@ -1510,19 +1565,27 @@ static esp_err_t req_wifi_connect(Rpc *req, Rpc *resp, void *priv_data)
 		return ESP_OK;
 	}
 
-	ESP_LOGI(TAG, "Attempting to connect to SSID: %s", wifi_cfg.sta.ssid);
+	ESP_LOGW(TAG, "Attempting to connect to SSID: %.*s",
+         sizeof(wifi_cfg.sta.ssid),
+         (char *)wifi_cfg.sta.ssid);
 
-	if (new_config_recvd || !station_connected) {
-		ESP_LOGI(TAG, "************ connect ****************");
+	/*ESP_LOGW(TAG, "With pass: %.*s",
+         sizeof(wifi_cfg.sta.password),
+         (char *)wifi_cfg.sta.password);*/
+
+
+	if (!station_connected) {
+		ESP_LOGI(TAG, "Initiating WiFi connection");
 		station_connecting = true;
 		ret = esp_wifi_connect();
 		if (ret != ESP_OK) {
-			ESP_LOGE(TAG, "Failed to connect to WiFi: %d", ret);
-			station_connecting = false;
+			ESP_LOGE(TAG, "Failed to connect to WiFi: 0x%x", ret);
+			if (ret != ESP_ERR_WIFI_CONN) {
+				station_connecting = false;
+			}
 		}
 	} else {
-		ESP_LOGI(TAG, "connect recvd, ack with connected event");
-
+		ESP_LOGW(TAG, "Already connected, sending connected event");
 		send_wifi_event_data_to_host(RPC_ID__Event_StaConnected,
 			&lkg_sta_connected_event, sizeof(wifi_event_sta_connected_t));
 	}
@@ -1544,103 +1607,32 @@ static esp_err_t req_wifi_disconnect(Rpc *req, Rpc *resp, void *priv_data)
 	return ESP_OK;
 }
 
-static bool wifi_is_provisioned(wifi_config_t *wifi_cfg)
-{
-	if (!wifi_cfg) {
-		ESP_LOGI(TAG, "NULL wifi cfg passed, ignore");
-		return false;
-	}
-
-	if (esp_wifi_get_config(WIFI_IF_STA, wifi_cfg) != ESP_OK) {
-		ESP_LOGI(TAG, "Wifi get config failed");
-		return false;
-	}
-
-	ESP_LOGI(TAG, "SSID: %s", wifi_cfg->sta.ssid);
-
-	if (strlen((const char *) wifi_cfg->sta.ssid)) {
-		ESP_LOGI(TAG, "Wifi provisioned");
-		return true;
-	}
-	ESP_LOGI(TAG, "Wifi not provisioned");
-
-	return false;
-}
-
-/* Function to compare two WiFi configurations */
-static bool is_wifi_config_equal(const wifi_config_t *cfg1, const wifi_config_t *cfg2)
-{
-	if (!cfg1 || !cfg2) {
-		return false;
-	}
-	/* Compare SSID */
-	if (strcmp((char *)cfg1->sta.ssid, (char *)cfg2->sta.ssid) != 0) {
-		ESP_LOGD(TAG, "SSID different: '%s' vs '%s'", cfg1->sta.ssid, cfg2->sta.ssid);
-		return false;
-	}
-
-	/* Compare password */
-	if (strcmp((char *)cfg1->sta.password, (char *)cfg2->sta.password) != 0) {
-		ESP_LOGD(TAG, "Password different");
-		return false;
-	}
-
-	/* Compare BSSID if set */
-	if (cfg1->sta.bssid_set && cfg2->sta.bssid_set) {
-		if (memcmp(cfg1->sta.bssid, cfg2->sta.bssid, BSSID_BYTES_SIZE) != 0) {
-			ESP_LOGD(TAG, "BSSID different");
-			return false;
-		}
-	} else if (cfg1->sta.bssid_set != cfg2->sta.bssid_set) {
-		ESP_LOGD(TAG, "BSSID set status different: %d vs %d",
-			cfg1->sta.bssid_set, cfg2->sta.bssid_set);
-		return false;
-	}
-
-	/* Compare channel if set */
-	if (cfg1->sta.channel != 0 && cfg2->sta.channel != 0) {
-		if (cfg1->sta.channel != cfg2->sta.channel) {
-			ESP_LOGD(TAG, "Channel different: %d vs %d",
-				cfg1->sta.channel, cfg2->sta.channel);
-			return false;
-		}
-	}
-
-	return true;
-}
-
 /* Function to handle WiFi configuration */
 esp_err_t esp_hosted_set_sta_config(wifi_interface_t iface, wifi_config_t *cfg)
 {
-	wifi_config_t current_config = {0};
-	if (!wifi_is_provisioned(&current_config)) {
-		if (esp_wifi_set_config(WIFI_IF_STA, cfg) != ESP_OK) {
-			ESP_LOGW(TAG, "not provisioned and failed to set wifi config");
-		} else {
-			ESP_LOGI(TAG, "Provisioned new Wi-Fi config");
-			new_config_recvd = false;
-			return ESP_OK;
-		}
-	}
+	if (station_connecting) {
+		ESP_LOGW(TAG, "Caching new WiFi config SSID: %.*s",
+				sizeof(cfg->sta.ssid), (char *)cfg->sta.ssid);
 
-	if (!is_wifi_config_equal(cfg, &current_config)) {
-		if (station_connecting) {
-			ESP_LOGI(TAG, "Caching new WiFi config SSID: %s", cfg->sta.ssid);
+		/*ESP_LOGW(TAG, "With pass: %.*s",
+		  sizeof(cfg->sta.password), (char *)cfg->sta.password);*/
+
+		memcpy(&new_wifi_config, cfg, sizeof(wifi_config_t));
+		new_config_recvd = true;
+	} else {
+		if (esp_wifi_set_config(WIFI_IF_STA, cfg) != ESP_OK) {
+			ESP_LOGW(TAG, "already provisioned but failed to set wifi config: copying to cache instead");
 			memcpy(&new_wifi_config, cfg, sizeof(wifi_config_t));
 			new_config_recvd = true;
 		} else {
-			if (esp_wifi_set_config(WIFI_IF_STA, cfg) != ESP_OK) {
-				ESP_LOGW(TAG, "already provisioned but failed to set wifi config: copying to cache instead");
-				memcpy(&new_wifi_config, cfg, sizeof(wifi_config_t));
-				new_config_recvd = true;
-			} else {
-				ESP_LOGI(TAG, "Setting new WiFi config SSID: %s", cfg->sta.ssid);
-				new_config_recvd = false;
-			}
+			ESP_LOGW(TAG, "Setting new WiFi config SSID: %.*s",
+					sizeof(cfg->sta.ssid), (char *)cfg->sta.ssid);
+
+			/*ESP_LOGW(TAG, "With pass: %.*s",
+			  sizeof(cfg->sta.password), (char *)cfg->sta.password);*/
+
+			new_config_recvd = false;
 		}
-	} else {
-		ESP_LOGI(TAG, "WiFi config unchanged, keeping current connection");
-		new_config_recvd = false;
 	}
 
 	return ESP_OK;
@@ -3297,7 +3289,7 @@ static esp_err_t req_eap_set_eap_methods(Rpc *req, Rpc *resp, void *priv_data)
 				RpcReqEapSetEapMethods, req_eap_set_eap_methods,
 				rpc__resp__eap_set_eap_methods__init);
 
-    RPC_RET_FAIL_IF(esp_eap_client_set_eap_methods(req_payload->methods));
+	RPC_RET_FAIL_IF(esp_eap_client_set_eap_methods(req_payload->methods));
 
 	return ESP_OK;
 }
@@ -3378,47 +3370,55 @@ static esp_err_t req_feature_control(Rpc *req, Rpc *resp, void *priv_data)
 			RpcReqFeatureControl, req_feature_control,
 			rpc__resp__feature_control__init);
 
-	// copy the incoming request to the outgoing response
+	/* Echo request into response */
 	resp_payload->feature = req_payload->feature;
 	resp_payload->command = req_payload->command;
 	resp_payload->option  = req_payload->option;
 
-	// redo once additional features are supported
-#ifdef CONFIG_SOC_BT_SUPPORTED // only valid if SOC supports bluetooth
-	if (req_payload->feature == RPC_FEATURE__Feature_Bluetooth) {
-		// decode the requested Bluetooth control
+	switch (req_payload->feature) {
+
+#ifdef CONFIG_ESP_HOSTED_COPROCESSOR_BT_ENABLED
+	case RPC_FEATURE__Feature_Bluetooth:
 		switch (req_payload->command) {
+
 		case RPC_FEATURE_COMMAND__Feature_Command_BT_Init:
 			RPC_RET_FAIL_IF(init_bluetooth());
 			break;
-		case RPC_FEATURE_COMMAND__Feature_Command_BT_Deinit:
-			bool mem_release = false;
-			if (req_payload->option == RPC_FEATURE_OPTION__Feature_Option_BT_Deinit_Release_Memory) {
-				mem_release = true;
-			}
+
+		case RPC_FEATURE_COMMAND__Feature_Command_BT_Deinit: {
+			bool mem_release =
+				(req_payload->option ==
+				 RPC_FEATURE_OPTION__Feature_Option_BT_Deinit_Release_Memory);
 			RPC_RET_FAIL_IF(deinit_bluetooth(mem_release));
 			break;
+		}
+
 		case RPC_FEATURE_COMMAND__Feature_Command_BT_Enable:
 			RPC_RET_FAIL_IF(enable_bluetooth());
 			break;
+
 		case RPC_FEATURE_COMMAND__Feature_Command_BT_Disable:
 			RPC_RET_FAIL_IF(disable_bluetooth());
 			break;
+
 		default:
-			// invalid Bluetooth control feature
 			ESP_LOGE(TAG, "error: invalid Bluetooth Feature Control");
 			resp_payload->resp = ESP_ERR_INVALID_ARG;
 			break;
 		}
-	} else {
-		// invalid feature
+		break;
+#endif /* CONFIG_ESP_HOSTED_COPROCESSOR_BT_ENABLED */
+
+	default:
+		/* Covers:
+		 * - BT feature when BT is disabled
+		 * - Any unsupported / unknown feature
+		 */
 		ESP_LOGE(TAG, "error: invalid Feature Control");
 		resp_payload->resp = ESP_ERR_INVALID_ARG;
+		break;
 	}
-#else
-	ESP_LOGE(TAG, "error: invalid Feature Control");
-	resp_payload->resp = ESP_ERR_INVALID_ARG;
-#endif
+
 	return ESP_OK;
 }
 
@@ -3460,6 +3460,201 @@ static esp_err_t req_app_get_desc(Rpc *req, Rpc *resp, void *priv_data)
 err:
 	return ESP_OK;
 }
+
+#ifdef CONFIG_ESP_HOSTED_MEM_MONITOR
+void mem_monitor_timer_cb(TimerHandle_t xTimer)
+{
+	bool threshold_exceeded = false;
+
+	mem_monitor_params_t current_mem_params = { 0 };
+
+	// get current params
+	current_mem_params.internal_mem_dma = heap_caps_get_free_size(MALLOC_CAP_DMA | MALLOC_CAP_INTERNAL);
+	current_mem_params.internal_mem_8bit = heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+	current_mem_params.external_mem_dma = heap_caps_get_free_size(MALLOC_CAP_DMA | MALLOC_CAP_SPIRAM);
+	current_mem_params.external_mem_8bit = heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+
+	// are current params lower than threshold
+#if CONFIG_SPIRAM
+	if ((current_mem_params.internal_mem_dma < mem_monitor_params.internal_mem_dma) ||
+			(current_mem_params.internal_mem_8bit < mem_monitor_params.internal_mem_8bit) ||
+			(current_mem_params.external_mem_dma < mem_monitor_params.external_mem_dma) ||
+			(current_mem_params.external_mem_8bit < mem_monitor_params.external_mem_8bit)) {
+		threshold_exceeded = true;
+	}
+#else
+	// external memory not enabled: only compare internal memory
+	if ((current_mem_params.internal_mem_dma < mem_monitor_params.internal_mem_dma) ||
+			(current_mem_params.internal_mem_8bit < mem_monitor_params.internal_mem_8bit)) {
+		threshold_exceeded = true;
+	}
+#endif
+	// send an event if the current threshold was exceeded or report_always is true
+	if (threshold_exceeded || mem_monitor_report_always) {
+		mem_monitor_event_t mem_monitor_event = { 0 };
+		mem_monitor_event.total_free_heap_size = esp_get_free_heap_size();
+		mem_monitor_event.min_free_heap_size = esp_get_minimum_free_heap_size();
+
+		// copy the curr heap free sizes
+		memcpy(&mem_monitor_event.free_size, &current_mem_params, sizeof(current_mem_params));
+
+		// get the largest free block size
+		mem_monitor_event.largest_free_block.internal_mem_dma =
+				heap_caps_get_largest_free_block(MALLOC_CAP_DMA | MALLOC_CAP_INTERNAL);
+		mem_monitor_event.largest_free_block.internal_mem_8bit =
+				heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+		mem_monitor_event.largest_free_block.external_mem_dma =
+				heap_caps_get_largest_free_block(MALLOC_CAP_DMA | MALLOC_CAP_SPIRAM);
+		mem_monitor_event.largest_free_block.external_mem_8bit =
+				heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+
+		send_event_data_to_host(RPC_ID__Event_MemMonitor, &mem_monitor_event, sizeof(mem_monitor_event));
+	}
+}
+
+static esp_err_t mem_monitor_check_params(RpcReqMemMonitor *req_payload)
+{
+	// check for missing allocated params in request
+	if (!req_payload->internal || !req_payload->external) {
+		ESP_LOGW(TAG, "%s: missing internal / external params in request", __func__);
+		return ESP_ERR_INVALID_ARG;
+	}
+
+	// checks when enabling mem monitor
+	if (req_payload->config == RPC__MEM_MONITOR_CONFIG__MEMMONITOR_ENABLE) {
+		// interval cannot be zero
+		if (!req_payload->interval_sec) {
+			return ESP_ERR_INVALID_ARG;
+		}
+
+		// thresholds should be valid if report_always is not set
+		if (!req_payload->report_always) {
+			if (!req_payload->internal->threshold_mem_dma &&
+					!req_payload->internal->threshold_mem_8bit &&
+					!req_payload->external->threshold_mem_dma &&
+					!req_payload->external->threshold_mem_8bit) {
+				return ESP_ERR_INVALID_ARG;
+			}
+		}
+	}
+
+	return ESP_OK;
+}
+
+static esp_err_t mem_monitor_setup(RpcReqMemMonitor *req_payload)
+{
+	if ((req_payload->config == RPC__MEM_MONITOR_CONFIG__MEMMONITOR_ENABLE) ||
+			(req_payload->config == RPC__MEM_MONITOR_CONFIG__MEMMONITOR_DISABLE)) {
+		// destroy current timer if config is disable or (re)enable
+		if (mem_monitor_timer_handle) {
+			if (xTimerIsTimerActive(mem_monitor_timer_handle)) {
+				xTimerStop(mem_monitor_timer_handle, portMAX_DELAY);
+			}
+			xTimerDelete(mem_monitor_timer_handle, portMAX_DELAY);
+			mem_monitor_timer_handle = NULL;
+		}
+	}
+
+	// do we start a new timer
+	if (req_payload->config == RPC__MEM_MONITOR_CONFIG__MEMMONITOR_ENABLE) {
+		// set up params before enabling
+		memset(&mem_monitor_params, 0, sizeof(mem_monitor_params));
+
+		mem_monitor_params.internal_mem_dma = req_payload->internal->threshold_mem_dma;
+		mem_monitor_params.internal_mem_8bit = req_payload->internal->threshold_mem_8bit;
+
+		mem_monitor_params.external_mem_dma = req_payload->external->threshold_mem_dma;
+		mem_monitor_params.external_mem_8bit = req_payload->external->threshold_mem_8bit;
+
+		mem_monitor_report_always = req_payload->report_always;
+		mem_monitor_interval_sec = req_payload->interval_sec;
+
+		// create monitor timer
+		mem_monitor_timer_handle = xTimerCreate("MemMonitorTimer",
+				pdMS_TO_TICKS(mem_monitor_interval_sec * 1000),
+				pdTRUE,
+				0,
+				mem_monitor_timer_cb);
+		if (!mem_monitor_timer_handle) {
+			ESP_LOGE(TAG, "failed to create mem monitor timer");
+			return ESP_FAIL;
+		}
+
+		// start the timer
+		if (!xTimerStart(mem_monitor_timer_handle, portMAX_DELAY)) {
+			ESP_LOGE(TAG, "failed to start mem monitor timer");
+			xTimerDelete(mem_monitor_timer_handle, portMAX_DELAY);
+			mem_monitor_timer_handle = NULL;
+			return ESP_FAIL;
+		}
+	}
+	return ESP_OK;
+}
+
+static void mem_monitor_fill_resp_stats(RpcRespMemMonitor *resp_payload)
+{
+	// fill the response with the memory statistics
+	resp_payload->curr_total_heap_size = esp_get_free_heap_size();
+
+	resp_payload->curr_internal->mem_dma->free_size = heap_caps_get_free_size(MALLOC_CAP_DMA | MALLOC_CAP_INTERNAL);
+	resp_payload->curr_internal->mem_dma->largest_free_block = heap_caps_get_largest_free_block(MALLOC_CAP_DMA | MALLOC_CAP_INTERNAL);
+	resp_payload->curr_internal->mem_8bit->free_size = heap_caps_get_free_size(MALLOC_CAP_8BIT|MALLOC_CAP_INTERNAL);
+	resp_payload->curr_internal->mem_8bit->largest_free_block = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+
+ 	resp_payload->curr_external->mem_dma->free_size = heap_caps_get_free_size(MALLOC_CAP_DMA | MALLOC_CAP_SPIRAM);
+	resp_payload->curr_external->mem_dma->largest_free_block = heap_caps_get_largest_free_block(MALLOC_CAP_DMA | MALLOC_CAP_SPIRAM);
+	resp_payload->curr_external->mem_8bit->free_size = heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+	resp_payload->curr_external->mem_8bit->largest_free_block = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+
+	ESP_LOGD(TAG, "Total heap size: %"PRIu32, resp_payload->curr_total_heap_size);
+	ESP_LOGD(TAG, "Internal->DMA->free_size: %"PRIu32, resp_payload->curr_internal->mem_dma->free_size);
+	ESP_LOGD(TAG, "Internal->DMA->largest_free_block: %"PRIu32, resp_payload->curr_internal->mem_dma->largest_free_block);
+	ESP_LOGD(TAG, "Internal->8bit->free_size: %"PRIu32, resp_payload->curr_internal->mem_8bit->free_size);
+	ESP_LOGD(TAG, "Internal->8bit->largest_free_block: %"PRIu32, resp_payload->curr_internal->mem_8bit->largest_free_block);
+	ESP_LOGD(TAG, "External->DMA->free_size: %"PRIu32, resp_payload->curr_external->mem_dma->free_size);
+	ESP_LOGD(TAG, "External->DMA->largest_free_block: %"PRIu32, resp_payload->curr_external->mem_dma->largest_free_block);
+	ESP_LOGD(TAG, "External->8bit->free_size: %"PRIu32, resp_payload->curr_external->mem_8bit->free_size);
+	ESP_LOGD(TAG, "External->8bit->largest_free_block: %"PRIu32, resp_payload->curr_external->mem_8bit->largest_free_block);
+}
+
+static esp_err_t req_mem_monitor(Rpc *req, Rpc *resp, void *priv_data)
+{
+	RPC_TEMPLATE(RpcRespMemMonitor, resp_mem_monitor,
+			RpcReqMemMonitor, req_mem_monitor,
+			rpc__resp__mem_monitor__init);
+
+	esp_err_t res = mem_monitor_check_params(req_payload);
+	if (res != ESP_OK) {
+		resp_payload->resp = res;
+		goto err;
+	}
+
+	res = mem_monitor_setup(req_payload);
+	if (res != ESP_OK) {
+		resp_payload->resp = res;
+		goto err;
+	}
+
+	// prepare the response
+	resp_payload->config = req_payload->config;
+	// return current settings
+	resp_payload->report_always = mem_monitor_report_always;
+	resp_payload->interval_sec = mem_monitor_interval_sec;
+
+	RPC_ALLOC_ELEMENT(HeapInfo, resp_payload->curr_internal, heap_info__init);
+	RPC_ALLOC_ELEMENT(MemInfo, resp_payload->curr_internal->mem_dma, mem_info__init);
+	RPC_ALLOC_ELEMENT(MemInfo, resp_payload->curr_internal->mem_8bit, mem_info__init);
+	RPC_ALLOC_ELEMENT(HeapInfo, resp_payload->curr_external, heap_info__init);
+	RPC_ALLOC_ELEMENT(MemInfo, resp_payload->curr_external->mem_dma, mem_info__init);
+	RPC_ALLOC_ELEMENT(MemInfo, resp_payload->curr_external->mem_8bit, mem_info__init);
+
+	mem_monitor_fill_resp_stats(resp_payload);
+
+ err:
+	return ESP_OK;
+}
+#endif // CONFIG_ESP_HOSTED_MEM_MONITOR
+
 #ifdef CONFIG_ESP_HOSTED_ENABLE_PEER_DATA_TRANSFER
 /* Internal RPC bridge - delegates to registered handler */
 static esp_err_t handle_custom_rpc_request(uint32_t msg_id, uint8_t *req_data, uint32_t req_len)
@@ -3540,7 +3735,7 @@ esp_err_t esp_hosted_send_custom_data(uint32_t msg_id, const uint8_t *data, size
 }
 
 esp_err_t esp_hosted_register_custom_callback(uint32_t msg_id,
-    void (*callback)(uint32_t msg_id, const uint8_t *data, size_t data_len))
+	void (*callback)(uint32_t msg_id, const uint8_t *data, size_t data_len))
 {
 	/* Validate message ID (-1/0xFFFFFFFF is invalid) */
 	if (msg_id == (uint32_t)-1) {
@@ -4437,6 +4632,12 @@ static esp_rpc_req_t req_table[] = {
 		.req_num = RPC_ID__Req_AppGetDesc,
 		.command_handler = req_app_get_desc
 	},
+#ifdef CONFIG_ESP_HOSTED_MEM_MONITOR
+	{
+		.req_num = RPC_ID__Req_MemMonitor,
+		.command_handler = req_mem_monitor
+	},
+#endif
 #ifdef CONFIG_ESP_HOSTED_ENABLE_PEER_DATA_TRANSFER
 	{
 		.req_num = RPC_ID__Req_CustomRpc,
@@ -4861,7 +5062,7 @@ static esp_err_t rpc_evt_itwt_suspend(Rpc *ntfy,
 	p_c->actual_suspend_time_ms = calloc(num_elements, sizeof(p_a->actual_suspend_time_ms[0]));
 	if (!p_c->actual_suspend_time_ms) {
 		ESP_LOGE(TAG,"resp: malloc failed for ntfy_payload->actual_suspend_time_ms");
-        ntfy_payload->resp = RPC_ERR_MEMORY_FAILURE;                         \
+		ntfy_payload->resp = RPC_ERR_MEMORY_FAILURE;	\
 		goto err;
 	}
 
@@ -5117,6 +5318,41 @@ static esp_err_t rpc_evt_custom_rpc(Rpc *ntfy, const uint8_t *data, ssize_t len)
 }
 #endif
 
+#ifdef CONFIG_ESP_HOSTED_MEM_MONITOR
+static esp_err_t rpc_evt_mem_monitor(Rpc *ntfy, const uint8_t *data, ssize_t len)
+{
+	NTFY_TEMPLATE(RPC_ID__Event_MemMonitor,
+			RpcEventMemMonitor, event_mem_monitor,
+			rpc__event__mem_monitor__init);
+
+	mem_monitor_event_t *ptr = (mem_monitor_event_t *)data;
+
+	NTFY_ALLOC_ELEMENT(HeapInfo, ntfy_payload->curr_internal, heap_info__init);
+	NTFY_ALLOC_ELEMENT(MemInfo, ntfy_payload->curr_internal->mem_dma, mem_info__init);
+	NTFY_ALLOC_ELEMENT(MemInfo, ntfy_payload->curr_internal->mem_8bit, mem_info__init);
+
+	NTFY_ALLOC_ELEMENT(HeapInfo, ntfy_payload->curr_external, heap_info__init);
+	NTFY_ALLOC_ELEMENT(MemInfo, ntfy_payload->curr_external->mem_dma, mem_info__init);
+	NTFY_ALLOC_ELEMENT(MemInfo, ntfy_payload->curr_external->mem_8bit, mem_info__init);
+
+	ntfy_payload->curr_total_free_heap_size = ptr->total_free_heap_size;
+	ntfy_payload->curr_min_free_heap_size = ptr->min_free_heap_size;
+
+	ntfy_payload->curr_internal->mem_dma->free_size = ptr->free_size.internal_mem_dma;
+	ntfy_payload->curr_internal->mem_8bit->free_size = ptr->free_size.internal_mem_8bit;
+	ntfy_payload->curr_internal->mem_dma->largest_free_block = ptr->largest_free_block.internal_mem_dma;
+	ntfy_payload->curr_internal->mem_8bit->largest_free_block = ptr->largest_free_block.internal_mem_8bit;
+
+	ntfy_payload->curr_external->mem_dma->free_size = ptr->free_size.external_mem_dma;
+	ntfy_payload->curr_external->mem_8bit->free_size = ptr->free_size.external_mem_8bit;
+	ntfy_payload->curr_external->mem_dma->largest_free_block = ptr->largest_free_block.external_mem_dma;
+	ntfy_payload->curr_external->mem_8bit->largest_free_block = ptr->largest_free_block.external_mem_8bit;
+	return ESP_OK;
+ err:
+	return ESP_FAIL;
+}
+#endif // CONFIG_ESP_HOSTED_MEM_MONITOR
+
 esp_err_t rpc_evt_handler(uint32_t session_id,const uint8_t *inbuf,
 		ssize_t inlen, uint8_t **outbuf, ssize_t *outlen, void *priv_data)
 {
@@ -5208,6 +5444,11 @@ esp_err_t rpc_evt_handler(uint32_t session_id,const uint8_t *inbuf,
 			ret = rpc_evt_custom_rpc(ntfy, inbuf, inlen);
 			break;
 #endif
+#ifdef CONFIG_ESP_HOSTED_MEM_MONITOR
+		} case RPC_ID__Event_MemMonitor: {
+			ret = rpc_evt_mem_monitor(ntfy, inbuf, inlen);
+			break;
+#endif // CONFIG_ESP_HOSTED_MEM_MONITOR
 		} default: {
 			ESP_LOGE(TAG, "Incorrect/unsupported Ctrl Notification[%u]\n",ntfy->msg_id);
 			goto err;

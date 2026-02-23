@@ -1,0 +1,2 @@
+source C:/opt/src/catflapcam/build-esp32p4/gdbinit/symbols
+source C:/opt/src/catflapcam/build-esp32p4/gdbinit/connect

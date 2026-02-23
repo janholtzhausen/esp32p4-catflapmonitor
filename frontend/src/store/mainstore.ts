@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import type { Camera, } from "@/camera";
+import type { Camera } from "@/camera";
 
 export const useMainStore = defineStore("main", () => {
   const clientCameras = ref<Camera[]>([]);
@@ -14,7 +14,7 @@ export const useMainStore = defineStore("main", () => {
 
     try {
       const response = await fetch("/api/get_camera_info");
-      const data: {cameras: Camera[]} = await response.json();
+      const data: { cameras: Camera[] } = await response.json();
       clientCameras.value.length = data.cameras.length;
 
       for (const camNum in data.cameras) {

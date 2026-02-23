@@ -1,0 +1,95 @@
+Command: ninja flash
+[1/5] C:\WINDOWS\system32\cmd.exe /C "cd /D C:\opt\src\catflapcam\build\esp-idf\esptool_py && C:\Users\janh\.espressif\python_env\idf5.5_py3.13_env\Scripts\python.exe C:/esp/v5.5.2/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 partition --type app C:/opt/src/catflapcam/build/partition_table/partition-table.bin C:/opt/src/catflapcam/build/catflapcam.bin"
+catflapcam.bin binary size 0x15f970 bytes. Smallest app partition is 0x200000 bytes. 0xa0690 bytes (31%) free.
+[2/5] Performing build step for 'bootloader'
+[1/1] C:\WINDOWS\system32\cmd.exe /C "cd /D C:\opt\src\catflapcam\build\bootloader\esp-idf\esptool_py && C:\Users\janh\.espressif\python_env\idf5.5_py3.13_env\Scripts\python.exe C:/esp/v5.5.2/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x2000 C:/opt/src/catflapcam/build/bootloader/bootloader.bin"
+Bootloader binary size 0x5a30 bytes. 0x5d0 bytes (6%) free.
+[3/5] No install step for 'bootloader'
+[4/5] Completed 'bootloader'
+[4/5] C:\WINDOWS\system32\cmd.exe /C "cd /D C:\esp\v5.5.2\esp-idf\components\esptool_py && C:\Users\janh\.espressif\tools\cmake\3.30.2\bin\cmake.exe -D IDF_PATH=C:/esp/v5.5.2/esp-idf -D SERIAL_TOOL=C:/Users/janh/.espressif/python_env/idf5.5_py3.13_env/Scripts/python.exe;;C:/esp/v5.5.2/esp-idf/components/esptool_py/esptool/esptool.py;--chip;esp32p4 -D SERIAL_TOOL_ARGS=--before=default_reset;--after=hard_reset;write_flash;@flash_args -D WORKING_DIRECTORY=C:/opt/src/catflapcam/build -P C:/esp/v5.5.2/esp-idf/components/esptool_py/run_serial_tool.cmake"
+esptool.py --chip esp32p4 -p COM4 -b 460800 --before=default_reset --after=hard_reset write_flash --flash_mode dio --flash_freq 80m --flash_size 16MB 0x2000 bootloader/bootloader.bin 0x20000 catflapcam.bin 0x8000 partition_table/partition-table.bin 0xf000 ota_data_initial.bin
+esptool.py v4.12.dev1
+Serial port COM4
+Connecting...
+Chip is ESP32-P4 (revision v1.0)
+Features: High-Performance MCU
+Crystal is 40MHz
+USB mode: USB-Serial/JTAG
+MAC: 30:ed:a0:e1:0e:d7
+Uploading stub...
+Running stub...
+Stub running...
+Changing baud rate to 460800
+Changed.
+Configuring flash size...
+Flash will be erased from 0x00002000 to 0x00007fff...
+Flash will be erased from 0x00020000 to 0x0017ffff...
+Flash will be erased from 0x00008000 to 0x00008fff...
+Flash will be erased from 0x0000f000 to 0x00010fff...
+SHA digest in image updated
+Compressed 23088 bytes to 14210...
+Writing at 0x00002000... (100 %)
+Wrote 23088 bytes (14210 compressed) at 0x00002000 in 0.4 seconds (effective 478.0 kbit/s)...
+Hash of data verified.
+Compressed 1440112 bytes to 778673...
+Writing at 0x00020000... (2 %)
+Writing at 0x0002f2b2... (4 %)
+Writing at 0x0003dd22... (6 %)
+Writing at 0x0004bfd0... (8 %)
+Writing at 0x00058e98... (10 %)
+Writing at 0x00064039... (12 %)
+Writing at 0x00068034... (14 %)
+Writing at 0x0006c02f... (16 %)
+Writing at 0x0007002a... (18 %)
+Writing at 0x00074025... (20 %)
+Writing at 0x00078020... (22 %)
+Writing at 0x0007bfe0... (25 %)
+Writing at 0x0008000c... (27 %)
+Writing at 0x00084685... (29 %)
+Writing at 0x0008e06c... (31 %)
+Writing at 0x00094ac8... (33 %)
+Writing at 0x0009ba05... (35 %)
+Writing at 0x000a2ec1... (37 %)
+Writing at 0x000aa826... (39 %)
+Writing at 0x000b550a... (41 %)
+Writing at 0x000be09d... (43 %)
+Writing at 0x000c5c14... (45 %)
+Writing at 0x000cbb2e... (47 %)
+Writing at 0x000d2702... (50 %)
+Writing at 0x000da167... (52 %)
+Writing at 0x000e2528... (54 %)
+Writing at 0x000eb0c5... (56 %)
+Writing at 0x000f24f0... (58 %)
+Writing at 0x000f964a... (60 %)
+Writing at 0x000ffe89... (62 %)
+Writing at 0x00106db0... (64 %)
+Writing at 0x0010dba4... (66 %)
+Writing at 0x00114ec2... (68 %)
+Writing at 0x0011be82... (70 %)
+Writing at 0x00123394... (72 %)
+Writing at 0x0012a8fd... (75 %)
+Writing at 0x00131580... (77 %)
+Writing at 0x00138977... (79 %)
+Writing at 0x0013f112... (81 %)
+Writing at 0x00145a91... (83 %)
+Writing at 0x0014c368... (85 %)
+Writing at 0x00152916... (87 %)
+Writing at 0x001588df... (89 %)
+Writing at 0x0015eb15... (91 %)
+Writing at 0x00164cf5... (93 %)
+Writing at 0x0016bb0c... (95 %)
+Writing at 0x00172f32... (97 %)
+Writing at 0x0017a3e1... (100 %)
+Wrote 1440112 bytes (778673 compressed) at 0x00020000 in 10.0 seconds (effective 1155.9 kbit/s)...
+Hash of data verified.
+Compressed 3072 bytes to 127...
+Writing at 0x00008000... (100 %)
+Wrote 3072 bytes (127 compressed) at 0x00008000 in 0.1 seconds (effective 425.7 kbit/s)...
+Hash of data verified.
+Compressed 8192 bytes to 31...
+Writing at 0x0000f000... (100 %)
+Wrote 8192 bytes (31 compressed) at 0x0000f000 in 0.1 seconds (effective 559.1 kbit/s)...
+Hash of data verified.
+
+Leaving...
+Hard resetting via RTS pin...

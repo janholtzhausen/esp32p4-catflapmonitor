@@ -179,7 +179,7 @@ C:/opt/src/catflapcam/build/esp-idf/espressif__esp_cam_sensor/libespressif__esp_
 C:/opt/src/catflapcam/build/esp-idf/espressif__esp_h264/libespressif__esp_h264.a
 C:/opt/src/catflapcam/build/esp-idf/espressif__esp_ipa/libespressif__esp_ipa.a
 C:/opt/src/catflapcam/build/esp-idf/espressif__usb_host_uvc/libespressif__usb_host_uvc.a
-C:/opt/src/catflapcam/build/esp-idf/example_video_common/libexample_video_common.a
+C:/opt/src/catflapcam/build/esp-idf/catflapcam_video_common/libcatflapcam_video_common.a
 C:/opt/src/catflapcam/build/esp-idf/espressif__esp_video/libespressif__esp_video.a
 C:/opt/src/catflapcam/build/esp-idf/esp_driver_jpeg/libesp_driver_jpeg.a
 C:/opt/src/catflapcam/build/esp-idf/espressif__esp_hosted/libespressif__esp_hosted.a
@@ -187,8 +187,7 @@ C:/opt/src/catflapcam/build/esp-idf/espressif__esp_serial_slave_link/libespressi
 C:/opt/src/catflapcam/build/esp-idf/espressif__eppp_link/libespressif__eppp_link.a
 C:/opt/src/catflapcam/build/esp-idf/espressif__esp_serial_slave_link/libespressif__esp_serial_slave_link.a
 C:/opt/src/catflapcam/build/esp-idf/espressif__esp_wifi_remote/libespressif__esp_wifi_remote.a
-C:/opt/src/catflapcam/build/esp-idf/protocol_examples_common/libprotocol_examples_common.a
 C:/opt/src/catflapcam/build/esp-idf/main/libmain.a
 C:/opt/src/catflapcam/build/esp-idf/json/libjson.a
-C:/opt/src/catflapcam/build/esp-idf/example_video_common/libexample_video_common.a
-C:/opt/src/catflapcam/build/esp-idf/protocol_examples_common/libprotocol_examples_common.a
+C:/opt/src/catflapcam/build/esp-idf/fatfs/libfatfs.a
+C:/opt/src/catflapcam/build/esp-idf/catflapcam_video_common/libcatflapcam_video_common.a

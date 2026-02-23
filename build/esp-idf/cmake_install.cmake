@@ -1,8 +1,8 @@
-# Install script for directory: C:/opt/esp/v5.5.2/esp-idf
+# Install script for directory: C:/esp/v5.5.2/esp-idf
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/simple_video_server")
+  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/catflapcam")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -34,7 +34,7 @@ endif()
 
 # Set path to fallback-tool for dependency-resolution.
 if(NOT DEFINED CMAKE_OBJDUMP)
-  set(CMAKE_OBJDUMP "C:/opt/esp/tools/tools/riscv32-esp-elf/esp-14.2.0_20251107/riscv32-esp-elf/bin/riscv32-esp-elf-objdump.exe")
+  set(CMAKE_OBJDUMP "C:/Users/janh/.espressif/tools/riscv32-esp-elf/esp-14.2.0_20251107/riscv32-esp-elf/bin/riscv32-esp-elf-objdump.exe")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
@@ -599,7 +599,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("C:/opt/src/catflapcam/build/esp-idf/example_video_common/cmake_install.cmake")
+  include("C:/opt/src/catflapcam/build/esp-idf/catflapcam_video_common/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
@@ -625,11 +625,6 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
   include("C:/opt/src/catflapcam/build/esp-idf/espressif__esp_wifi_remote/cmake_install.cmake")
-endif()
-
-if(NOT CMAKE_INSTALL_LOCAL_ONLY)
-  # Include the install script for the subdirectory.
-  include("C:/opt/src/catflapcam/build/esp-idf/protocol_examples_common/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)

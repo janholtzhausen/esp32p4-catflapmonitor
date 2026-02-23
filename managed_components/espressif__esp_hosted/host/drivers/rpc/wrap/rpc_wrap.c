@@ -42,7 +42,9 @@ uint8_t restart_after_slave_ota = 0;
 #define GET_FWVERSION_TIMEOUT_SEC                         1
 
 /* Forward declarations */
+#if CONFIG_ESP_HOSTED_WIFI_AUTO_CONNECT_ON_STA_START
 static int rpc_wifi_connect_async(void);
+#endif
 static esp_err_t rpc_iface_feature_control(rcp_feature_control_t *feature_control);
 
 static ctrl_cmd_t * RPC_DEFAULT_REQ(void)
@@ -307,7 +309,9 @@ static int rpc_event_callback(ctrl_cmd_t * app_event)
 				/* Trigger connection when station is started */
 				if (!netif_started && !is_wifi_netif_started(WIFI_IF_STA)) {
 					g_h.funcs->_h_event_wifi_post(wifi_event_id, 0, 0, HOSTED_BLOCK_MAX);
+#if CONFIG_ESP_HOSTED_WIFI_AUTO_CONNECT_ON_STA_START
 					rpc_wifi_connect_async();
+#endif
 					netif_started = true;
 				}
 				break;
@@ -360,6 +364,11 @@ static int rpc_event_callback(ctrl_cmd_t * app_event)
 				p_e, sizeof(wifi_event_sta_scan_done_t), HOSTED_BLOCK_MAX);
 			break;
 		} case RPC_ID__Event_DhcpDnsStatus: {
+			break;
+		} case RPC_ID__Event_MemMonitor: {
+			esp_hosted_event_mem_info_t *p_e = &app_event->u.e_mem_info;
+			g_h.funcs->_h_event_post(ESP_HOSTED_EVENT, ESP_HOSTED_EVENT_MEM_MONITOR,
+				p_e, sizeof(esp_hosted_event_mem_info_t), HOSTED_BLOCK_MAX);
 			break;
 #ifdef H_PEER_DATA_TRANSFER
 		} case RPC_ID__Event_CustomRpc: {
@@ -472,6 +481,7 @@ int rpc_register_event_callbacks(void)
 		{ RPC_ID__Event_StaConnected,              rpc_event_callback },
 		{ RPC_ID__Event_StaDisconnected,           rpc_event_callback },
 		{ RPC_ID__Event_DhcpDnsStatus,             rpc_event_callback },
+		{ RPC_ID__Event_MemMonitor,                rpc_event_callback },
 #if H_WIFI_HE_SUPPORT
 		{ RPC_ID__Event_StaItwtSetup,              rpc_event_callback },
 		{ RPC_ID__Event_StaItwtTeardown,           rpc_event_callback },
@@ -669,6 +679,7 @@ int rpc_rsp_callback(ctrl_cmd_t * app_resp)
 	case RPC_ID__Resp_IfaceMacAddrLenGet:
 	case RPC_ID__Resp_FeatureControl:
 	case RPC_ID__Resp_AppGetDesc:
+	case RPC_ID__Resp_MemMonitor:
 #if H_WIFI_HE_SUPPORT
 	case RPC_ID__Resp_WifiStaTwtConfig:
 	case RPC_ID__Resp_WifiStaItwtSetup:
@@ -1305,6 +1316,7 @@ int rpc_wifi_connect(void)
 	return rpc_rsp_callback(resp);
 }
 
+#if CONFIG_ESP_HOSTED_WIFI_AUTO_CONNECT_ON_STA_START
 static int rpc_wifi_connect_async(void)
 {
 	/* implemented asynchronous */
@@ -1316,6 +1328,7 @@ static int rpc_wifi_connect_async(void)
 
 	return SUCCESS;
 }
+#endif
 
 int rpc_wifi_disconnect(void)
 {
@@ -2361,6 +2374,24 @@ esp_err_t rpc_iface_get_coprocessor_app_desc(esp_hosted_app_desc_t *app_desc)
 	return rpc_rsp_callback(resp);
 }
 
+#if H_MEM_MONITOR
+esp_err_t rpc_iface_set_mem_monitor(esp_hosted_config_mem_monitor_t *config, esp_hosted_curr_mem_info_t *curr_mem_info)
+{
+	/* implemented synchronous */
+	ctrl_cmd_t *req = RPC_DEFAULT_REQ();
+	ctrl_cmd_t *resp = NULL;
+
+	g_h.funcs->_h_memcpy(&req->u.config_mem_monitor, config, sizeof(esp_hosted_config_mem_monitor_t));
+
+	resp = rpc_slave_iface_set_mem_monitor(req);
+	if (resp && resp->resp_event_status == SUCCESS) {
+		g_h.funcs->_h_memcpy(curr_mem_info, &resp->u.curr_mem_info, sizeof(esp_hosted_curr_mem_info_t));
+	}
+
+	return rpc_rsp_callback(resp);
+}
+#endif
+
 int rpc_bt_controller_init(void)
 {
 	rcp_feature_control_t feature_control;
@@ -2581,4 +2612,3 @@ esp_err_t esp_hosted_cp_gpio_set_pull_mode(uint32_t gpio_num, uint32_t pull_mode
 	return rpc_rsp_callback(resp);
 }
 #endif
-

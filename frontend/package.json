@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "version": "0.0.5",
-  "license":"ESPRESSIF MIT",
+  "license": "ESPRESSIF MIT",
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
@@ -11,8 +11,8 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --build --force",
     "lint": "eslint . --fix",
-    "compress": "pnpm run build && bash ./compress_dist.sh",
-    "compress-only": "bash ./compress_dist.sh"
+    "compress": "pnpm run build && node ./scripts/compress-dist.mjs",
+    "compress-only": "node ./scripts/compress-dist.mjs"
   },
   "dependencies": {
     "@mdi/font": "7.4.47",

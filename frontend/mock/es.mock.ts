@@ -158,45 +158,9 @@ export default (): MockHandler[] => [
         return;
       }
 
-      res.statusCode = 302;
-      res.setHeader(
-        "Location",
-        `https://picsum.photos/${camera.currentResolution.width}/${camera.currentResolution.height}`
-      );
-      res.end();
-    },
-  },
-
-  {
-    pattern: "/api/capture_binary",
-    method: "GET",
-    handle: (req, res) => {
-      const url = new URL(req.url!, `http://${req.headers.host}`);
-      const source = url.searchParams.get("source");
-
-      if (!source) {
-        res.statusCode = 400;
-        res.end("Missing source parameter");
-        return;
-      }
-
-      const camera = mockCameras.find((cam) => cam.index.toString() === source);
-      if (!camera) {
-        res.statusCode = 404;
-        res.end("Camera not found");
-        return;
-      }
-
-      const mockBinaryData = Buffer.from(
-        `Mock binary data for camera ${source}`,
-        "utf-8"
-      );
-      res.setHeader("Content-Type", "application/octet-stream");
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="camera_${source}_raw.bin"`
-      );
-      res.end(mockBinaryData);
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "text/plain");
+      res.end("OK\n");
     },
   },
 

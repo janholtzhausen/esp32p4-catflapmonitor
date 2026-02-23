@@ -4,6 +4,18 @@ menu "Example Configuration"
 		bool
 		default y
 
+    config ESP_HOSTED_COPROCESSOR_BT_ENABLED
+        bool "Enable BT sharing via hosted"
+        default y
+		help
+			This removes coprocessor sharing BT capabilities with the Host irrespective of
+			if it supports BT or not
+			For use-case where, BT is only required on co-processor, this option can be used
+
+	if ESP_HOSTED_COPROCESSOR_BT_ENABLED && (!BT_ENABLED || !SOC_BT_SUPPORTED)
+		comment "WARNING: ESP_HOSTED_COPROCESSOR_BT_ENABLED is enabled but BT_ENABLED or SOC_BT_SUPPORTED is disabled. This needs to be enabled for BT sharing to work."
+	endif
+
 	config ESP_HOSTED_COPROCESSOR_APP_MAIN
 		bool "Use ESP-Hosted coprocessor app_main"
 		default y
@@ -17,36 +29,37 @@ menu "Example Configuration"
 			Disable this when using ESP-Hosted as a component in your application where
 			you provide your own app_main() (e.g., in network_adapter, signaling_only examples).
 
+	choice ESP_HOST_DEV_BOARD
+		bool "ESP PCB Board Selection (optional, used for auto GPIO mapping)"
+		default ESP_HOST_DEV_BOARD_NONE
+		help
+			"Preconfigures GPIOs to use based on an ESP Development Board"
+
+		config ESP_HOST_DEV_BOARD_NONE
+			bool "No specific development board"
+
+		config ESP_HOST_DEV_BOARD_P4_FUNC_BOARD
+			bool "ESP32-P4-Function-EV-Board"
+			depends on IDF_TARGET_ESP32C6
+
+		config C2_C5_MODULE_SUB_BOARD
+			bool "ESP32-P4 EV Sub-Board for C2 & C5"
+			depends on IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C5
+
+		config ESP_HOST_DEV_BOARD_P4_C5_CORE
+			bool "ESP32-P4-C5 Core Board with on-board C5"
+			depends on IDF_TARGET_ESP32C5
+
+		config ESP_HOST_DEV_BOARD_P4_C6_CORE
+			bool "ESP32-P4-C6 Core Board with on-board C6"
+			depends on IDF_TARGET_ESP32C6
+
+		config ESP_HOST_DEV_BOARD_P4_C61_CORE
+			bool "ESP32-P4-C61 Core Board with on-board C61"
+			depends on IDF_TARGET_ESP32C61
+	endchoice
+
 	menu "Bus Config in between Host and Co-processor"
-		choice ESP_HOST_DEV_BOARD
-			bool "Configure GPIOs based on an ESP Development Board"
-			default ESP_HOST_DEV_BOARD_NONE
-			help
-				"Preconfigures GPIOs to use based on an ESP Development Board"
-
-			config ESP_HOST_DEV_BOARD_NONE
-				bool "No specific development board"
-
-			config ESP_HOST_DEV_BOARD_P4_FUNC_BOARD
-				bool "ESP32-P4-Function-EV-Board"
-				depends on IDF_TARGET_ESP32C6
-
-			config C2_C5_MODULE_SUB_BOARD
-				bool "ESP32-P4 EV Sub-Board for C2 & C5"
-				depends on IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C5
-
-			config ESP_HOST_DEV_BOARD_P4_C5_CORE
-				bool "ESP32-P4-C5 Core Board with on-board C5"
-				depends on IDF_TARGET_ESP32C5
-
-			config ESP_HOST_DEV_BOARD_P4_C6_CORE
-				bool "ESP32-P4-C6 Core Board with on-board C6"
-				depends on IDF_TARGET_ESP32C6
-
-			config ESP_HOST_DEV_BOARD_P4_C61_CORE
-				bool "ESP32-P4-C61 Core Board with on-board C61"
-				depends on IDF_TARGET_ESP32C61
-		endchoice
 
 		choice ESP_HOST_INTERFACE
 			bool "Transport layer"
@@ -932,6 +945,13 @@ menu "Example Configuration"
 			with a 1ms delay between retries. Disable this to call TX only once
 			without retry, which may be useful for debugging or specific use cases.
 
+	config ESP_HOSTED_MEM_MONITOR
+		bool "Enable Memory Monitor Interface"
+		default y
+		help
+			Enable the Memory Monitor Interface. Host can query the interface to get
+			information on heap size or get an event when heap falls below a set threshold.
+
 	config ESP_WIFI_DPP_SUPPORT
 		bool "Enable Wi-Fi Easy Connect (DPP)"
 		default n
@@ -995,6 +1015,21 @@ menu "Example Configuration"
 				Maximum number of unique functions that can be profiled simultaneously.
 				Each entry consumes memory, so keep this value reasonable based on
 				available memory.
+
+		config ESP_HOSTED_LOG_RUNTIME_FREERTOS_STATS
+			bool "Hosted runtime freertos related task, mem stats"
+			default n
+			help
+				Enable this to log runtime stats periodically.
+				This will create a task that logs the stats.
+
+				NOTE: This feature requires 'Component config->FreeRTOS->Enable collection
+				of run time stats' (FREERTOS_GENERATE_RUN_TIME_STATS) to be enabled.
+
+		if ESP_HOSTED_LOG_RUNTIME_FREERTOS_STATS && !FREERTOS_GENERATE_RUN_TIME_STATS
+			comment "WARNING: FREERTOS_GENERATE_RUN_TIME_STATS must be enabled for runtime stats logging to work!"
+		endif
+
 	endmenu
 
 	config ESP_HOSTED_NETWORK_SPLIT_ENABLED
@@ -1005,6 +1040,20 @@ menu "Example Configuration"
 			Enables the LWIP stack on the slave to process its own set of ports,
 			alongside the host stack. Helps split network traffic and allows
 			background tasks on the slave, even when the host is in low-power mode.
+
+	config ESP_HOSTED_NETWORK_SPLIT_WIFI_AUTO_MGMT
+		bool "Auto-manage WiFi connections for Network Split (recommended)"
+		depends on ESP_HOSTED_NETWORK_SPLIT_ENABLED
+		default y
+		select ESP_HOSTED_WIFI_AUTO_CONNECT_ON_STA_START
+		help
+			Automatically enables WiFi auto-connect on STA_START and STA_DISCONNECT.
+			This allows the slave to quickly establish and maintain WiFi connectivity
+			for its own LWIP stack without host intervention.
+
+			Irrespective of this option enable/disable, you can always control the Wi-Fi from host
+
+			Disable this if you do not wish to auto connect WiFi connection at slave.
 
 	menu "Network Split Configuration"
 		depends on ESP_HOSTED_NETWORK_SPLIT_ENABLED
@@ -1132,6 +1181,14 @@ menu "Example Configuration"
 					Host range: 49152-61439
 		endmenu
 
+		config ESP_HOSTED_REUSE_WIFI_STA_DEF_NETIF_INSTANCE
+			bool "Use WIFI_STA_DEF netif for slave"
+			default n
+			help
+				If this option is set, esp-hosted will fetch for existing WIFI_STA_DEF netif for slave.
+				This is useful when the application handles Wi-Fi and creates a default STA interface.
+				esp-hosted will get the handle of this interface instead of creating its own.
+
 	endmenu
 
 	config ESP_HOSTED_HOST_POWER_SAVE_ENABLED
@@ -1154,17 +1211,32 @@ menu "Example Configuration"
 
 		menu "Host deep sleep - wakeup config"
 			depends on ESP_HOSTED_HOST_DEEP_SLEEP_ALLOWED
+			config PRIV_ESP_HOSTED_HOST_WAKEUP_GPIO_MIN
+				int
+				default 2 if ESP_HOST_DEV_BOARD_P4_FUNC_BOARD && !ESP_SPI_HD_HOST_INTERFACE
+				default 9 if ESP_HOST_DEV_BOARD_P4_FUNC_BOARD && ESP_SPI_HD_HOST_INTERFACE
+				default 3 if ESP_HOST_DEV_BOARD_P4_C5_CORE
+				default 6 if C2_C5_MODULE_SUB_BOARD && IDF_TARGET_ESP32C2
+				default -1
+
+			config PRIV_ESP_HOSTED_HOST_WAKEUP_GPIO_MAX
+				int
+				default 2 if ESP_HOST_DEV_BOARD_P4_FUNC_BOARD && !ESP_SPI_HD_HOST_INTERFACE
+				default 9 if ESP_HOST_DEV_BOARD_P4_FUNC_BOARD && ESP_SPI_HD_HOST_INTERFACE
+				default 3 if ESP_HOST_DEV_BOARD_P4_C5_CORE
+				default 6 if C2_C5_MODULE_SUB_BOARD && IDF_TARGET_ESP32C2
+				default 100
+
 			config ESP_HOSTED_HOST_WAKEUP_GPIO
 				int "Slave out: Host wakeup GPIO"
 				default 2 if ESP_HOST_DEV_BOARD_P4_FUNC_BOARD && !ESP_SPI_HD_HOST_INTERFACE
 				default 9 if ESP_HOST_DEV_BOARD_P4_FUNC_BOARD && ESP_SPI_HD_HOST_INTERFACE
-				default -1 if (ESP_HOST_DEV_BOARD_P4_C6_CORE  || ESP_HOST_DEV_BOARD_P4_C61_CORE ) && !ESP_SPI_HD_HOST_INTERFACE
-				default -1 if (ESP_HOST_DEV_BOARD_P4_C6_CORE  || ESP_HOST_DEV_BOARD_P4_C61_CORE ) && ESP_SPI_HD_HOST_INTERFACE
-				default 1 if IDF_TARGET_ESP32C3
-				default 25 if IDF_TARGET_ESP32C5 && !ESP_HOST_DEV_BOARD_P4_C5_CORE
-				default 6 if IDF_TARGET_ESP32C2 && C2_C5_MODULE_SUB_BOARD
 				default 3 if ESP_HOST_DEV_BOARD_P4_C5_CORE
+				default 6 if C2_C5_MODULE_SUB_BOARD && IDF_TARGET_ESP32C2
+				default 1 if ESP_HOST_DEV_BOARD_NONE && IDF_TARGET_ESP32C3
+				default 25 if ESP_HOST_DEV_BOARD_NONE && IDF_TARGET_ESP32C5
 				default -1
+				range PRIV_ESP_HOSTED_HOST_WAKEUP_GPIO_MIN PRIV_ESP_HOSTED_HOST_WAKEUP_GPIO_MAX
 
 			choice ESP_HOSTED_HOST_WAKEUP_GPIO_LEVEL
 				prompt "Host Wakeup GPIO Level"
@@ -1206,6 +1278,32 @@ menu "Example Configuration"
 	# Include Light Sleep Configuration (separate module)
 	# ═══════════════════════════════════════════════════════════
 	rsource "Kconfig.light_sleep"
+
+	config ESP_HOSTED_WIFI_AUTO_CONNECT_ON_STA_START
+		bool "Auto-connect WiFi on STA_START"
+		default y if ESP_HOSTED_NETWORK_SPLIT_ENABLED
+		default n
+		help
+			Automatically connect to WiFi when station starts at slave side.
+			Enable this when using network split so slave can manage its own LWIP stack.
+			Disable to manually control WiFi connection timing from host or application.
+
+	config ESP_HOSTED_WIFI_AUTO_CONNECT_ON_STA_DISCONNECT
+		bool "Auto-reconnect WiFi on STA_DISCONNECT"
+		default n
+		help
+			Automatically reconnect to WiFi when station disconnects.
+
+if ESP_HOSTED_WIFI_AUTO_CONNECT_ON_STA_DISCONNECT
+	comment "ESP_HOSTED_WIFI_AUTO_CONNECT_ON_STA_DISCONNECT is advanced option. Slave may loop in connection disregarding host new config requests"
+endif
+
+	config ESP_HOSTED_WIFI_AUTO_RECONNECT_MAX_RETRY
+		int "Maximum reconnect retries on STA_DISCONNECT"
+		depends on ESP_HOSTED_WIFI_AUTO_CONNECT_ON_STA_DISCONNECT
+		default 5
+		help
+			Set the maximum number of retries for auto-reconnect on station disconnect.
 
 	config ESP_HOSTED_CLI_ENABLED
 		bool "Enable CLI Shell"

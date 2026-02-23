@@ -8517,8 +8517,8 @@
                 "children": [],
                 "depends_on": null,
                 "help": "Number of video buffers for the camera sensor.\n\nMore buffers provide better performance and reduce frame drops,\nbut consume more memory. Recommended range: 2-4 buffers.\n\n- 2 buffers: Minimum for basic operation\n- 3-4 buffers: Better performance for smooth streaming\n- Higher values: May improve performance but increase memory usage",
-                "id": "EXAMPLE_CAMERA_VIDEO_BUFFER_NUMBER",
-                "name": "EXAMPLE_CAMERA_VIDEO_BUFFER_NUMBER",
+                "id": "CATFLAPCAM_CAMERA_VIDEO_BUFFER_NUMBER",
+                "name": "CATFLAPCAM_CAMERA_VIDEO_BUFFER_NUMBER",
                 "range": null,
                 "title": "Camera video buffer number",
                 "type": "int"
@@ -8527,8 +8527,8 @@
                 "children": [],
                 "depends_on": null,
                 "help": "JPEG compression quality percentage (1-100).\n\nHigher values produce better image quality but larger data streams:\n- 90-100: Excellent quality, high bandwidth usage\n- 70-90: Good quality, moderate bandwidth (recommended for UVC)\n- 50-70: Acceptable quality, lower bandwidth\n- 1-50: Poor quality, minimal bandwidth\n\nFor UVC streaming, consider the USB bandwidth limitations\nand host system capabilities when choosing quality level.\n\nRecommended: 80 for balanced quality and performance.",
-                "id": "EXAMPLE_JPEG_COMPRESSION_QUALITY",
-                "name": "EXAMPLE_JPEG_COMPRESSION_QUALITY",
+                "id": "CATFLAPCAM_JPEG_COMPRESSION_QUALITY",
+                "name": "CATFLAPCAM_JPEG_COMPRESSION_QUALITY",
                 "range": [
                     1,
                     100
@@ -8540,8 +8540,8 @@
                 "children": [],
                 "depends_on": null,
                 "help": "HTTP multipart boundary string used for MJPEG streaming.\n\nThis boundary separates different parts in the HTTP multipart response.\nMust be unique and not appear in the video data. The default value\nis designed to be unique and safe for most applications.",
-                "id": "EXAMPLE_HTTP_PART_BOUNDARY",
-                "name": "EXAMPLE_HTTP_PART_BOUNDARY",
+                "id": "CATFLAPCAM_HTTP_PART_BOUNDARY",
+                "name": "CATFLAPCAM_HTTP_PART_BOUNDARY",
                 "range": null,
                 "title": "HTTP part boundary",
                 "type": "string"
@@ -8550,8 +8550,8 @@
                 "children": [],
                 "depends_on": null,
                 "help": "mDNS instance name for service discovery.\n\nThis name will be used to identify the camera service on the network.\nOther devices can discover this camera using this instance name\nthrough mDNS/Bonjour protocols.",
-                "id": "EXAMPLE_MDNS_INSTANCE",
-                "name": "EXAMPLE_MDNS_INSTANCE",
+                "id": "CATFLAPCAM_MDNS_INSTANCE",
+                "name": "CATFLAPCAM_MDNS_INSTANCE",
                 "range": null,
                 "title": "mDNS instance",
                 "type": "string"
@@ -8560,16 +8560,77 @@
                 "children": [],
                 "depends_on": null,
                 "help": "mDNS host name for the ESP32 device.\n\nThis hostname will be used for network identification and can be\naccessed as \"esp-web.local\" on the local network (if mDNS is supported\nby the client device).",
-                "id": "EXAMPLE_MDNS_HOST_NAME",
-                "name": "EXAMPLE_MDNS_HOST_NAME",
+                "id": "CATFLAPCAM_MDNS_HOST_NAME",
+                "name": "CATFLAPCAM_MDNS_HOST_NAME",
                 "range": null,
                 "title": "mDNS host name",
                 "type": "string"
+            },
+            {
+                "children": [
+                    {
+                        "children": [],
+                        "depends_on": "CATFLAPCAM_ULTRASONIC_TRIGGER_ENABLE",
+                        "help": "GPIO connected to the sensor TRIG pin.",
+                        "id": "CATFLAPCAM_ULTRASONIC_TRIG_GPIO",
+                        "name": "CATFLAPCAM_ULTRASONIC_TRIG_GPIO",
+                        "range": null,
+                        "title": "Ultrasonic TRIG GPIO",
+                        "type": "int"
+                    },
+                    {
+                        "children": [],
+                        "depends_on": "CATFLAPCAM_ULTRASONIC_TRIGGER_ENABLE",
+                        "help": "GPIO connected to the sensor ECHO pin.",
+                        "id": "CATFLAPCAM_ULTRASONIC_ECHO_GPIO",
+                        "name": "CATFLAPCAM_ULTRASONIC_ECHO_GPIO",
+                        "range": null,
+                        "title": "Ultrasonic ECHO GPIO",
+                        "type": "int"
+                    },
+                    {
+                        "children": [],
+                        "depends_on": "CATFLAPCAM_ULTRASONIC_TRIGGER_ENABLE",
+                        "help": "Auto-capture is triggered when measured distance is less than or equal to this value.",
+                        "id": "CATFLAPCAM_ULTRASONIC_TRIGGER_DISTANCE_CM",
+                        "name": "CATFLAPCAM_ULTRASONIC_TRIGGER_DISTANCE_CM",
+                        "range": null,
+                        "title": "Ultrasonic trigger distance (cm)",
+                        "type": "int"
+                    },
+                    {
+                        "children": [],
+                        "depends_on": "CATFLAPCAM_ULTRASONIC_TRIGGER_ENABLE",
+                        "help": "Debounce interval to avoid repeated captures while an object remains in range.",
+                        "id": "CATFLAPCAM_ULTRASONIC_MIN_INTERVAL_MS",
+                        "name": "CATFLAPCAM_ULTRASONIC_MIN_INTERVAL_MS",
+                        "range": null,
+                        "title": "Minimum interval between ultrasonic captures (ms)",
+                        "type": "int"
+                    },
+                    {
+                        "children": [],
+                        "depends_on": "CATFLAPCAM_ULTRASONIC_TRIGGER_ENABLE",
+                        "help": "Camera source index used for automatic captures.",
+                        "id": "CATFLAPCAM_ULTRASONIC_SOURCE_INDEX",
+                        "name": "CATFLAPCAM_ULTRASONIC_SOURCE_INDEX",
+                        "range": null,
+                        "title": "Camera index used by ultrasonic trigger",
+                        "type": "int"
+                    }
+                ],
+                "depends_on": null,
+                "help": "Enable distance-based automatic image capture/snapshot save using an HC-SR04 style\nultrasonic sensor. When enabled, the firmware periodically measures distance and\ntriggers /api/capture_image behavior when an object comes near.",
+                "id": "CATFLAPCAM_ULTRASONIC_TRIGGER_ENABLE",
+                "name": "CATFLAPCAM_ULTRASONIC_TRIGGER_ENABLE",
+                "range": null,
+                "title": "Enable ultrasonic trigger snapshot capture",
+                "type": "bool"
             }
         ],
         "depends_on": null,
-        "id": "example-configuration",
-        "title": "Example Configuration",
+        "id": "catflapcam-configuration",
+        "title": "Catflapcam Configuration",
         "type": "menu"
     },
     {
@@ -8578,59 +8639,19 @@
                 "children": [
                     {
                         "children": [],
-                        "depends_on": "IDF_TARGET_ESP32P4 && <choice EXAMPLE_SELECT_TARGET_DEVELOPMENT_BOARD>",
-                        "help": "Official Espressif ESP32-P4 Function Evaluation Board Version 1.4.\nIncludes predefined GPIO configurations for camera and display interfaces.",
-                        "id": "EXAMPLE_SELECT_ESP32P4_FUNCTION_EV_BOARD_V1_4",
-                        "name": "EXAMPLE_SELECT_ESP32P4_FUNCTION_EV_BOARD_V1_4",
-                        "range": null,
-                        "title": "ESP32-P4-Function-EV-Board V1.4",
-                        "type": "bool"
-                    },
-                    {
-                        "children": [],
-                        "depends_on": "IDF_TARGET_ESP32P4 && <choice EXAMPLE_SELECT_TARGET_DEVELOPMENT_BOARD>",
-                        "help": "Official Espressif ESP32-P4 Function Evaluation Board Version 1.5.\nIncludes predefined GPIO configurations for camera and display interfaces.",
-                        "id": "EXAMPLE_SELECT_ESP32P4_FUNCTION_EV_BOARD_V1_5",
-                        "name": "EXAMPLE_SELECT_ESP32P4_FUNCTION_EV_BOARD_V1_5",
-                        "range": null,
-                        "title": "ESP32-P4-Function-EV-Board V1.5",
-                        "type": "bool"
-                    },
-                    {
-                        "children": [],
-                        "depends_on": "IDF_TARGET_ESP32P4 && <choice EXAMPLE_SELECT_TARGET_DEVELOPMENT_BOARD>",
-                        "help": "Espressif ESP32-P4-EYE development board optimized for computer vision\nand AI applications with integrated camera and display.",
-                        "id": "EXAMPLE_SELECT_ESP32P4_EYE",
-                        "name": "EXAMPLE_SELECT_ESP32P4_EYE",
-                        "range": null,
-                        "title": "ESP32-P4-EYE",
-                        "type": "bool"
-                    },
-                    {
-                        "children": [],
-                        "depends_on": "IDF_TARGET_ESP32S3 && <choice EXAMPLE_SELECT_TARGET_DEVELOPMENT_BOARD>",
-                        "help": "Espressif ESP32-S3-EYE development board with integrated camera sensor\nand LCD display for AI and computer vision applications.",
-                        "id": "EXAMPLE_SELECT_ESP32S3_EYE",
-                        "name": "EXAMPLE_SELECT_ESP32S3_EYE",
-                        "range": null,
-                        "title": "ESP32-S3-EYE",
-                        "type": "bool"
-                    },
-                    {
-                        "children": [],
-                        "depends_on": "<choice EXAMPLE_SELECT_TARGET_DEVELOPMENT_BOARD>",
+                        "depends_on": "<choice CATFLAPCAM_SELECT_TARGET_DEVELOPMENT_BOARD>",
                         "help": "Use a custom development board requiring manual GPIO configuration.\nYou will need to configure all camera interface pins according to\nyour hardware design.",
-                        "id": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD",
-                        "name": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD",
+                        "id": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD",
+                        "name": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD",
                         "range": null,
                         "title": "Customized Development Board",
                         "type": "bool"
                     }
                 ],
                 "depends_on": null,
-                "help": "Select your target development board for automatic pin configuration.\n\nIf your board is not listed, select \"Custom development board\" and\nconfigure the GPIO pins manually according to your hardware design.",
-                "id": "example-video-initialization-configuration-select-target-development-board",
-                "name": "EXAMPLE_SELECT_TARGET_DEVELOPMENT_BOARD",
+                "help": "This project is configured for ESP32-P4 custom hardware.",
+                "id": "catflapcam-video-initialization-configuration-select-target-development-board",
+                "name": "CATFLAPCAM_SELECT_TARGET_DEVELOPMENT_BOARD",
                 "title": "Select Target Development Board",
                 "type": "choice"
             },
@@ -8640,20 +8661,20 @@
                         "children": [
                             {
                                 "children": [],
-                                "depends_on": "!EXAMPLE_SCCB_I2C_INIT_BY_APP && EXAMPLE_ENABLE_MIPI_CSI_CAM_SENSOR",
+                                "depends_on": "!CATFLAPCAM_SCCB_I2C_INIT_BY_APP && CATFLAPCAM_ENABLE_MIPI_CSI_CAM_SENSOR",
                                 "help": "I2C port number for camera sensor control communication.\n\nSCCB (Serial Camera Control Bus) is an I2C-compatible\nprotocol used for camera sensor configuration.",
-                                "id": "EXAMPLE_MIPI_CSI_SCCB_I2C_PORT",
-                                "name": "EXAMPLE_MIPI_CSI_SCCB_I2C_PORT",
+                                "id": "CATFLAPCAM_MIPI_CSI_SCCB_I2C_PORT",
+                                "name": "CATFLAPCAM_MIPI_CSI_SCCB_I2C_PORT",
                                 "range": null,
                                 "title": "SCCB(I2C) Port Number",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_ENABLE_MIPI_CSI_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_ENABLE_MIPI_CSI_CAM_SENSOR",
                                 "help": "I2C clock frequency for camera sensor communication.\n\nRecommended values:\n- 100000 Hz (100kHz): Standard speed, most compatible\n- 400000 Hz (400kHz): Fast mode, reduces initialization time\n\nHigher frequencies reduce sensor initialization time but may\ncause issues with some sensors or longer cable connections.",
-                                "id": "EXAMPLE_MIPI_CSI_SCCB_I2C_FREQ",
-                                "name": "EXAMPLE_MIPI_CSI_SCCB_I2C_FREQ",
+                                "id": "CATFLAPCAM_MIPI_CSI_SCCB_I2C_FREQ",
+                                "name": "CATFLAPCAM_MIPI_CSI_SCCB_I2C_FREQ",
                                 "range": [
                                     100000,
                                     400000
@@ -8665,59 +8686,59 @@
                                 "children": [
                                     {
                                         "children": [],
-                                        "depends_on": "!EXAMPLE_SCCB_I2C_INIT_BY_APP && EXAMPLE_ENABLE_MIPI_CSI_CAM_MOTOR && EXAMPLE_ENABLE_MIPI_CSI_CAM_SENSOR",
+                                        "depends_on": "!CATFLAPCAM_SCCB_I2C_INIT_BY_APP && CATFLAPCAM_ENABLE_MIPI_CSI_CAM_MOTOR && CATFLAPCAM_ENABLE_MIPI_CSI_CAM_SENSOR",
                                         "help": "I2C port number for autofocus motor control communication.\n\nSCCB (Serial Camera Control Bus) is an I2C-compatible\nprotocol used for camera sensor configuration.\n\nCan be the same as camera sensor port if sharing the bus.",
-                                        "id": "EXAMPLE_MIPI_CSI_CAM_MOTOR_SCCB_I2C_PORT",
-                                        "name": "EXAMPLE_MIPI_CSI_CAM_MOTOR_SCCB_I2C_PORT",
+                                        "id": "CATFLAPCAM_MIPI_CSI_CAM_MOTOR_SCCB_I2C_PORT",
+                                        "name": "CATFLAPCAM_MIPI_CSI_CAM_MOTOR_SCCB_I2C_PORT",
                                         "range": null,
                                         "title": "Motor SCCB(I2C) Port Number",
                                         "type": "int"
                                     },
                                     {
                                         "children": [],
-                                        "depends_on": "EXAMPLE_ENABLE_MIPI_CSI_CAM_MOTOR && EXAMPLE_ENABLE_MIPI_CSI_CAM_SENSOR",
+                                        "depends_on": "CATFLAPCAM_ENABLE_MIPI_CSI_CAM_MOTOR && CATFLAPCAM_ENABLE_MIPI_CSI_CAM_SENSOR",
                                         "help": "I2C clock frequency for camera sensor communication.\n\nRecommended values:\n- 100000 Hz (100kHz): Standard speed, most compatible\n- 400000 Hz (400kHz): Fast mode, reduces initialization time\n\nHigher frequencies reduce sensor initialization time but may\ncause issues with some sensors or longer cable connections.",
-                                        "id": "EXAMPLE_MIPI_CSI_CAM_MOTOR_SCCB_I2C_FREQ",
-                                        "name": "EXAMPLE_MIPI_CSI_CAM_MOTOR_SCCB_I2C_FREQ",
+                                        "id": "CATFLAPCAM_MIPI_CSI_CAM_MOTOR_SCCB_I2C_FREQ",
+                                        "name": "CATFLAPCAM_MIPI_CSI_CAM_MOTOR_SCCB_I2C_FREQ",
                                         "range": null,
                                         "title": "Motor SCCB(I2C) Frequency (100K-400K Hz)",
                                         "type": "int"
                                     }
                                 ],
-                                "depends_on": "ESP_VIDEO_ENABLE_CAMERA_MOTOR_CONTROLLER && EXAMPLE_ENABLE_MIPI_CSI_CAM_SENSOR",
+                                "depends_on": "ESP_VIDEO_ENABLE_CAMERA_MOTOR_CONTROLLER && CATFLAPCAM_ENABLE_MIPI_CSI_CAM_SENSOR",
                                 "help": "Enable Voice Coil Motor (VCM) control for autofocus functionality.\n\nThis feature is required for camera modules with autofocus\ncapabilities. Disable if using fixed-focus lenses.",
-                                "id": "EXAMPLE_ENABLE_MIPI_CSI_CAM_MOTOR",
-                                "name": "EXAMPLE_ENABLE_MIPI_CSI_CAM_MOTOR",
+                                "id": "CATFLAPCAM_ENABLE_MIPI_CSI_CAM_MOTOR",
+                                "name": "CATFLAPCAM_ENABLE_MIPI_CSI_CAM_MOTOR",
                                 "range": null,
                                 "title": "Enable Motor Control",
                                 "type": "bool"
                             },
                             {
                                 "children": [],
-                                "depends_on": "!EXAMPLE_SCCB_I2C_INIT_BY_APP && EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_MIPI_CSI_CAM_SENSOR",
+                                "depends_on": "!CATFLAPCAM_SCCB_I2C_INIT_BY_APP && CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_MIPI_CSI_CAM_SENSOR",
                                 "help": "GPIO pin for I2C clock signal to camera sensor.",
-                                "id": "EXAMPLE_MIPI_CSI_SCCB_I2C_SCL_PIN",
-                                "name": "EXAMPLE_MIPI_CSI_SCCB_I2C_SCL_PIN",
+                                "id": "CATFLAPCAM_MIPI_CSI_SCCB_I2C_SCL_PIN",
+                                "name": "CATFLAPCAM_MIPI_CSI_SCCB_I2C_SCL_PIN",
                                 "range": null,
                                 "title": "SCCB(I2C) SCL Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "!EXAMPLE_SCCB_I2C_INIT_BY_APP && EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_MIPI_CSI_CAM_SENSOR",
+                                "depends_on": "!CATFLAPCAM_SCCB_I2C_INIT_BY_APP && CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_MIPI_CSI_CAM_SENSOR",
                                 "help": "GPIO pin for I2C data signal to camera sensor.",
-                                "id": "EXAMPLE_MIPI_CSI_SCCB_I2C_SDA_PIN",
-                                "name": "EXAMPLE_MIPI_CSI_SCCB_I2C_SDA_PIN",
+                                "id": "CATFLAPCAM_MIPI_CSI_SCCB_I2C_SDA_PIN",
+                                "name": "CATFLAPCAM_MIPI_CSI_SCCB_I2C_SDA_PIN",
                                 "range": null,
                                 "title": "SCCB(I2C) SDA Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_MIPI_CSI_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_MIPI_CSI_CAM_SENSOR",
                                 "help": "GPIO pin for camera sensor hardware reset.\nSet to -1 if not connected or not required.\n\nActive low signal that resets the camera sensor.",
-                                "id": "EXAMPLE_MIPI_CSI_CAM_SENSOR_RESET_PIN",
-                                "name": "EXAMPLE_MIPI_CSI_CAM_SENSOR_RESET_PIN",
+                                "id": "CATFLAPCAM_MIPI_CSI_CAM_SENSOR_RESET_PIN",
+                                "name": "CATFLAPCAM_MIPI_CSI_CAM_SENSOR_RESET_PIN",
                                 "range": [
                                     -1,
                                     54
@@ -8727,10 +8748,10 @@
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_MIPI_CSI_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_MIPI_CSI_CAM_SENSOR",
                                 "help": "GPIO pin for camera sensor power-down control.\nSet to -1 if not connected or not required.\n\nActive high signal that puts the sensor in power-down mode.",
-                                "id": "EXAMPLE_MIPI_CSI_CAM_SENSOR_PWDN_PIN",
-                                "name": "EXAMPLE_MIPI_CSI_CAM_SENSOR_PWDN_PIN",
+                                "id": "CATFLAPCAM_MIPI_CSI_CAM_SENSOR_PWDN_PIN",
+                                "name": "CATFLAPCAM_MIPI_CSI_CAM_SENSOR_PWDN_PIN",
                                 "range": [
                                     -1,
                                     54
@@ -8740,10 +8761,10 @@
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_MIPI_CSI_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_MIPI_CSI_CAM_SENSOR",
                                 "help": "GPIO pin for camera sensor master clock output.\nSet to -1 if clock is provided by other means.\n\nThis provides the reference clock signal to the camera sensor.",
-                                "id": "EXAMPLE_MIPI_CSI_XCLK_PIN",
-                                "name": "EXAMPLE_MIPI_CSI_XCLK_PIN",
+                                "id": "CATFLAPCAM_MIPI_CSI_XCLK_PIN",
+                                "name": "CATFLAPCAM_MIPI_CSI_XCLK_PIN",
                                 "range": [
                                     -1,
                                     54
@@ -8753,60 +8774,60 @@
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_MIPI_CSI_XCLK_PIN >= 0 && EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_MIPI_CSI_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_MIPI_CSI_XCLK_PIN >= 0 && CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_MIPI_CSI_CAM_SENSOR",
                                 "help": "Master clock frequency for camera sensor.\n\nCommon values:\n- 24000000 Hz (24MHz): Standard for most MIPI sensors\n- 20000000 Hz (20MHz): Alternative for some sensors\n\nCheck your sensor datasheet for supported frequencies.",
-                                "id": "EXAMPLE_MIPI_CSI_XCLK_FREQ",
-                                "name": "EXAMPLE_MIPI_CSI_XCLK_FREQ",
+                                "id": "CATFLAPCAM_MIPI_CSI_XCLK_FREQ",
+                                "name": "CATFLAPCAM_MIPI_CSI_XCLK_FREQ",
                                 "range": null,
                                 "title": "XCLK Frequency (Hz)",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "!EXAMPLE_SCCB_I2C_INIT_BY_APP && EXAMPLE_ENABLE_MIPI_CSI_CAM_MOTOR && EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_MIPI_CSI_CAM_SENSOR",
+                                "depends_on": "!CATFLAPCAM_SCCB_I2C_INIT_BY_APP && CATFLAPCAM_ENABLE_MIPI_CSI_CAM_MOTOR && CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_MIPI_CSI_CAM_SENSOR",
                                 "help": "GPIO pin for I2C clock signal to autofocus motor.\nCan share the same pin as camera sensor I2C.",
-                                "id": "EXAMPLE_MIPI_CSI_CAM_MOTOR_SCCB_I2C_SCL_PIN",
-                                "name": "EXAMPLE_MIPI_CSI_CAM_MOTOR_SCCB_I2C_SCL_PIN",
+                                "id": "CATFLAPCAM_MIPI_CSI_CAM_MOTOR_SCCB_I2C_SCL_PIN",
+                                "name": "CATFLAPCAM_MIPI_CSI_CAM_MOTOR_SCCB_I2C_SCL_PIN",
                                 "range": null,
                                 "title": "Motor SCCB(I2C) SCL Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "!EXAMPLE_SCCB_I2C_INIT_BY_APP && EXAMPLE_ENABLE_MIPI_CSI_CAM_MOTOR && EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_MIPI_CSI_CAM_SENSOR",
+                                "depends_on": "!CATFLAPCAM_SCCB_I2C_INIT_BY_APP && CATFLAPCAM_ENABLE_MIPI_CSI_CAM_MOTOR && CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_MIPI_CSI_CAM_SENSOR",
                                 "help": "GPIO pin for I2C data signal to autofocus motor.\nCan share the same pin as camera sensor I2C.",
-                                "id": "EXAMPLE_MIPI_CSI_CAM_MOTOR_SCCB_I2C_SDA_PIN",
-                                "name": "EXAMPLE_MIPI_CSI_CAM_MOTOR_SCCB_I2C_SDA_PIN",
+                                "id": "CATFLAPCAM_MIPI_CSI_CAM_MOTOR_SCCB_I2C_SDA_PIN",
+                                "name": "CATFLAPCAM_MIPI_CSI_CAM_MOTOR_SCCB_I2C_SDA_PIN",
                                 "range": null,
                                 "title": "Motor SCCB(I2C) SDA Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_ENABLE_MIPI_CSI_CAM_MOTOR && EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_MIPI_CSI_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_ENABLE_MIPI_CSI_CAM_MOTOR && CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_MIPI_CSI_CAM_SENSOR",
                                 "help": "GPIO pin for autofocus motor reset control.\nSet to -1 if not connected or not required.",
-                                "id": "EXAMPLE_MIPI_CSI_CAM_MOTOR_RESET_PIN",
-                                "name": "EXAMPLE_MIPI_CSI_CAM_MOTOR_RESET_PIN",
+                                "id": "CATFLAPCAM_MIPI_CSI_CAM_MOTOR_RESET_PIN",
+                                "name": "CATFLAPCAM_MIPI_CSI_CAM_MOTOR_RESET_PIN",
                                 "range": null,
                                 "title": "Motor Reset Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_ENABLE_MIPI_CSI_CAM_MOTOR && EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_MIPI_CSI_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_ENABLE_MIPI_CSI_CAM_MOTOR && CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_MIPI_CSI_CAM_SENSOR",
                                 "help": "GPIO pin for autofocus motor power-down control.\nSet to -1 if not connected or not required.",
-                                "id": "EXAMPLE_MIPI_CSI_CAM_MOTOR_PWDN_PIN",
-                                "name": "EXAMPLE_MIPI_CSI_CAM_MOTOR_PWDN_PIN",
+                                "id": "CATFLAPCAM_MIPI_CSI_CAM_MOTOR_PWDN_PIN",
+                                "name": "CATFLAPCAM_MIPI_CSI_CAM_MOTOR_PWDN_PIN",
                                 "range": null,
                                 "title": "Motor Power Down Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_ENABLE_MIPI_CSI_CAM_MOTOR && EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_MIPI_CSI_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_ENABLE_MIPI_CSI_CAM_MOTOR && CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_MIPI_CSI_CAM_SENSOR",
                                 "help": "GPIO pin for autofocus motor control signal.\nSet to -1 if not connected or motor doesn't require it.",
-                                "id": "EXAMPLE_MIPI_CSI_CAM_MOTOR_SIGNAL_PIN",
-                                "name": "EXAMPLE_MIPI_CSI_CAM_MOTOR_SIGNAL_PIN",
+                                "id": "CATFLAPCAM_MIPI_CSI_CAM_MOTOR_SIGNAL_PIN",
+                                "name": "CATFLAPCAM_MIPI_CSI_CAM_MOTOR_SIGNAL_PIN",
                                 "range": null,
                                 "title": "Motor Signal Pin",
                                 "type": "int"
@@ -8814,9 +8835,9 @@
                         ],
                         "depends_on": "ESP_VIDEO_ENABLE_MIPI_CSI_VIDEO_DEVICE",
                         "help": "Mobile Industry Processor Interface Camera Serial Interface.\nHigh-speed differential serial interface commonly used in\nmobile devices and professional camera applications.",
-                        "id": "EXAMPLE_ENABLE_MIPI_CSI_CAM_SENSOR",
+                        "id": "CATFLAPCAM_ENABLE_MIPI_CSI_CAM_SENSOR",
                         "is_menuconfig": true,
-                        "name": "EXAMPLE_ENABLE_MIPI_CSI_CAM_SENSOR",
+                        "name": "CATFLAPCAM_ENABLE_MIPI_CSI_CAM_SENSOR",
                         "range": null,
                         "title": "MIPI-CSI",
                         "type": "menu"
@@ -8825,190 +8846,190 @@
                         "children": [
                             {
                                 "children": [],
-                                "depends_on": "!EXAMPLE_SCCB_I2C_INIT_BY_APP && EXAMPLE_ENABLE_DVP_CAM_SENSOR",
+                                "depends_on": "!CATFLAPCAM_SCCB_I2C_INIT_BY_APP && CATFLAPCAM_ENABLE_DVP_CAM_SENSOR",
                                 "help": "I2C port number for camera sensor control communication.\n\nSCCB (Serial Camera Control Bus) is an I2C-compatible\nprotocol used for camera sensor configuration.",
-                                "id": "EXAMPLE_DVP_SCCB_I2C_PORT",
-                                "name": "EXAMPLE_DVP_SCCB_I2C_PORT",
+                                "id": "CATFLAPCAM_DVP_SCCB_I2C_PORT",
+                                "name": "CATFLAPCAM_DVP_SCCB_I2C_PORT",
                                 "range": null,
                                 "title": "SCCB(I2C) Port Number",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_ENABLE_DVP_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_ENABLE_DVP_CAM_SENSOR",
                                 "help": "I2C clock frequency for camera sensor communication.\n\nRecommended values:\n- 100000 Hz (100kHz): Standard speed, most compatible\n- 400000 Hz (400kHz): Fast mode, reduces initialization time\n\nHigher frequencies reduce sensor initialization time but may\ncause issues with some sensors or longer cable connections.",
-                                "id": "EXAMPLE_DVP_SCCB_I2C_FREQ",
-                                "name": "EXAMPLE_DVP_SCCB_I2C_FREQ",
+                                "id": "CATFLAPCAM_DVP_SCCB_I2C_FREQ",
+                                "name": "CATFLAPCAM_DVP_SCCB_I2C_FREQ",
                                 "range": null,
                                 "title": "SCCB(I2C) Frequency (100K-400K Hz)",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_ENABLE_DVP_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_ENABLE_DVP_CAM_SENSOR",
                                 "help": "Master clock frequency for DVP camera sensor.\n\nCommon values:\n- 20000000 Hz (20MHz): Standard for most DVP sensors\n- 24000000 Hz (24MHz): Alternative for some sensors",
-                                "id": "EXAMPLE_DVP_XCLK_FREQ",
-                                "name": "EXAMPLE_DVP_XCLK_FREQ",
+                                "id": "CATFLAPCAM_DVP_XCLK_FREQ",
+                                "name": "CATFLAPCAM_DVP_XCLK_FREQ",
                                 "range": null,
                                 "title": "XCLK Frequency (Hz)",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "!EXAMPLE_SCCB_I2C_INIT_BY_APP && EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_DVP_CAM_SENSOR",
+                                "depends_on": "!CATFLAPCAM_SCCB_I2C_INIT_BY_APP && CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_DVP_CAM_SENSOR",
                                 "help": "GPIO pin for I2C clock signal to camera sensor.",
-                                "id": "EXAMPLE_DVP_SCCB_I2C_SCL_PIN",
-                                "name": "EXAMPLE_DVP_SCCB_I2C_SCL_PIN",
+                                "id": "CATFLAPCAM_DVP_SCCB_I2C_SCL_PIN",
+                                "name": "CATFLAPCAM_DVP_SCCB_I2C_SCL_PIN",
                                 "range": null,
                                 "title": "SCCB(I2C) SCL Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "!EXAMPLE_SCCB_I2C_INIT_BY_APP && EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_DVP_CAM_SENSOR",
+                                "depends_on": "!CATFLAPCAM_SCCB_I2C_INIT_BY_APP && CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_DVP_CAM_SENSOR",
                                 "help": "GPIO pin for I2C data signal to camera sensor.",
-                                "id": "EXAMPLE_DVP_SCCB_I2C_SDA_PIN",
-                                "name": "EXAMPLE_DVP_SCCB_I2C_SDA_PIN",
+                                "id": "CATFLAPCAM_DVP_SCCB_I2C_SDA_PIN",
+                                "name": "CATFLAPCAM_DVP_SCCB_I2C_SDA_PIN",
                                 "range": null,
                                 "title": "SCCB(I2C) SDA Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_DVP_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_DVP_CAM_SENSOR",
                                 "help": "GPIO pin for camera sensor hardware reset.\nSet to -1 if not connected or not required.",
-                                "id": "EXAMPLE_DVP_CAM_SENSOR_RESET_PIN",
-                                "name": "EXAMPLE_DVP_CAM_SENSOR_RESET_PIN",
+                                "id": "CATFLAPCAM_DVP_CAM_SENSOR_RESET_PIN",
+                                "name": "CATFLAPCAM_DVP_CAM_SENSOR_RESET_PIN",
                                 "range": null,
                                 "title": "Reset Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_DVP_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_DVP_CAM_SENSOR",
                                 "help": "GPIO pin for camera sensor power-down control.\nSet to -1 if not connected or not required.",
-                                "id": "EXAMPLE_DVP_CAM_SENSOR_PWDN_PIN",
-                                "name": "EXAMPLE_DVP_CAM_SENSOR_PWDN_PIN",
+                                "id": "CATFLAPCAM_DVP_CAM_SENSOR_PWDN_PIN",
+                                "name": "CATFLAPCAM_DVP_CAM_SENSOR_PWDN_PIN",
                                 "range": null,
                                 "title": "Power Down Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_DVP_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_DVP_CAM_SENSOR",
                                 "help": "GPIO pin for camera sensor master clock output.",
-                                "id": "EXAMPLE_DVP_XCLK_PIN",
-                                "name": "EXAMPLE_DVP_XCLK_PIN",
+                                "id": "CATFLAPCAM_DVP_XCLK_PIN",
+                                "name": "CATFLAPCAM_DVP_XCLK_PIN",
                                 "range": null,
                                 "title": "XCLK Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_DVP_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_DVP_CAM_SENSOR",
                                 "help": "GPIO pin for pixel clock signal from camera sensor.\nThis clock synchronizes pixel data transmission.",
-                                "id": "EXAMPLE_DVP_PCLK_PIN",
-                                "name": "EXAMPLE_DVP_PCLK_PIN",
+                                "id": "CATFLAPCAM_DVP_PCLK_PIN",
+                                "name": "CATFLAPCAM_DVP_PCLK_PIN",
                                 "range": null,
                                 "title": "PCLK Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_DVP_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_DVP_CAM_SENSOR",
                                 "help": "GPIO pin for vertical synchronization signal.\nIndicates the start of a new frame.",
-                                "id": "EXAMPLE_DVP_VSYNC_PIN",
-                                "name": "EXAMPLE_DVP_VSYNC_PIN",
+                                "id": "CATFLAPCAM_DVP_VSYNC_PIN",
+                                "name": "CATFLAPCAM_DVP_VSYNC_PIN",
                                 "range": null,
                                 "title": "VSYNC Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_DVP_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_DVP_CAM_SENSOR",
                                 "help": "GPIO pin for data enable signal.\nIndicates when pixel data is valid.",
-                                "id": "EXAMPLE_DVP_DE_PIN",
-                                "name": "EXAMPLE_DVP_DE_PIN",
+                                "id": "CATFLAPCAM_DVP_DE_PIN",
+                                "name": "CATFLAPCAM_DVP_DE_PIN",
                                 "range": null,
                                 "title": "DE Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_DVP_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_DVP_CAM_SENSOR",
                                 "help": "GPIO pin for camera data bit 0 (LSB).",
-                                "id": "EXAMPLE_DVP_D0_PIN",
-                                "name": "EXAMPLE_DVP_D0_PIN",
+                                "id": "CATFLAPCAM_DVP_D0_PIN",
+                                "name": "CATFLAPCAM_DVP_D0_PIN",
                                 "range": null,
                                 "title": "Data0 Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_DVP_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_DVP_CAM_SENSOR",
                                 "help": "GPIO pin for camera data bit 1.",
-                                "id": "EXAMPLE_DVP_D1_PIN",
-                                "name": "EXAMPLE_DVP_D1_PIN",
+                                "id": "CATFLAPCAM_DVP_D1_PIN",
+                                "name": "CATFLAPCAM_DVP_D1_PIN",
                                 "range": null,
                                 "title": "Data1 Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_DVP_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_DVP_CAM_SENSOR",
                                 "help": "GPIO pin for camera data bit 2.",
-                                "id": "EXAMPLE_DVP_D2_PIN",
-                                "name": "EXAMPLE_DVP_D2_PIN",
+                                "id": "CATFLAPCAM_DVP_D2_PIN",
+                                "name": "CATFLAPCAM_DVP_D2_PIN",
                                 "range": null,
                                 "title": "Data2 Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_DVP_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_DVP_CAM_SENSOR",
                                 "help": "GPIO pin for camera data bit 3.",
-                                "id": "EXAMPLE_DVP_D3_PIN",
-                                "name": "EXAMPLE_DVP_D3_PIN",
+                                "id": "CATFLAPCAM_DVP_D3_PIN",
+                                "name": "CATFLAPCAM_DVP_D3_PIN",
                                 "range": null,
                                 "title": "Data3 Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_DVP_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_DVP_CAM_SENSOR",
                                 "help": "GPIO pin for camera data bit 4.",
-                                "id": "EXAMPLE_DVP_D4_PIN",
-                                "name": "EXAMPLE_DVP_D4_PIN",
+                                "id": "CATFLAPCAM_DVP_D4_PIN",
+                                "name": "CATFLAPCAM_DVP_D4_PIN",
                                 "range": null,
                                 "title": "Data4 Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_DVP_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_DVP_CAM_SENSOR",
                                 "help": "GPIO pin for camera data bit 5.",
-                                "id": "EXAMPLE_DVP_D5_PIN",
-                                "name": "EXAMPLE_DVP_D5_PIN",
+                                "id": "CATFLAPCAM_DVP_D5_PIN",
+                                "name": "CATFLAPCAM_DVP_D5_PIN",
                                 "range": null,
                                 "title": "Data5 Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_DVP_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_DVP_CAM_SENSOR",
                                 "help": "GPIO pin for camera data bit 6.",
-                                "id": "EXAMPLE_DVP_D6_PIN",
-                                "name": "EXAMPLE_DVP_D6_PIN",
+                                "id": "CATFLAPCAM_DVP_D6_PIN",
+                                "name": "CATFLAPCAM_DVP_D6_PIN",
                                 "range": null,
                                 "title": "Data6 Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_DVP_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_DVP_CAM_SENSOR",
                                 "help": "GPIO pin for camera data bit 7 (MSB).",
-                                "id": "EXAMPLE_DVP_D7_PIN",
-                                "name": "EXAMPLE_DVP_D7_PIN",
+                                "id": "CATFLAPCAM_DVP_D7_PIN",
+                                "name": "CATFLAPCAM_DVP_D7_PIN",
                                 "range": null,
                                 "title": "Data7 Pin",
                                 "type": "int"
@@ -9016,9 +9037,9 @@
                         ],
                         "depends_on": "ESP_VIDEO_ENABLE_DVP_VIDEO_DEVICE",
                         "help": "Digital Video Port - parallel interface for camera sensors.\nUses multiple GPIO pins for data transmission and control signals.\nCommon in older camera modules and ESP32-CAM boards.",
-                        "id": "EXAMPLE_ENABLE_DVP_CAM_SENSOR",
+                        "id": "CATFLAPCAM_ENABLE_DVP_CAM_SENSOR",
                         "is_menuconfig": true,
-                        "name": "EXAMPLE_ENABLE_DVP_CAM_SENSOR",
+                        "name": "CATFLAPCAM_ENABLE_DVP_CAM_SENSOR",
                         "range": null,
                         "title": "DVP",
                         "type": "menu"
@@ -9027,30 +9048,30 @@
                         "children": [
                             {
                                 "children": [],
-                                "depends_on": "!EXAMPLE_SCCB_I2C_INIT_BY_APP && EXAMPLE_ENABLE_SPI_CAM_SENSOR",
+                                "depends_on": "!CATFLAPCAM_SCCB_I2C_INIT_BY_APP && CATFLAPCAM_ENABLE_SPI_CAM_SENSOR",
                                 "help": "I2C port number for camera sensor control communication.\n\nSCCB (Serial Camera Control Bus) is an I2C-compatible\nprotocol used for camera sensor configuration.",
-                                "id": "EXAMPLE_SPI_SCCB_I2C_PORT",
-                                "name": "EXAMPLE_SPI_SCCB_I2C_PORT",
+                                "id": "CATFLAPCAM_SPI_SCCB_I2C_PORT",
+                                "name": "CATFLAPCAM_SPI_SCCB_I2C_PORT",
                                 "range": null,
                                 "title": "SCCB(I2C) Port Number",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_ENABLE_SPI_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_ENABLE_SPI_CAM_SENSOR",
                                 "help": "I2C clock frequency for camera sensor communication.\n\nRecommended values:\n- 100000 Hz (100kHz): Standard speed, most compatible\n- 400000 Hz (400kHz): Fast mode, reduces initialization time\n\nHigher frequencies reduce sensor initialization time but may\ncause issues with some sensors or longer cable connections.",
-                                "id": "EXAMPLE_SPI_SCCB_I2C_FREQ",
-                                "name": "EXAMPLE_SPI_SCCB_I2C_FREQ",
+                                "id": "CATFLAPCAM_SPI_SCCB_I2C_FREQ",
+                                "name": "CATFLAPCAM_SPI_SCCB_I2C_FREQ",
                                 "range": null,
                                 "title": "SCCB(I2C) Frequency (100K-400K Hz)",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_ENABLE_SPI_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_ENABLE_SPI_CAM_SENSOR",
                                 "help": "SPI peripheral number for camera data communication.",
-                                "id": "EXAMPLE_SPI_CAM_SPI_PORT",
-                                "name": "EXAMPLE_SPI_CAM_SPI_PORT",
+                                "id": "CATFLAPCAM_SPI_CAM_SPI_PORT",
+                                "name": "CATFLAPCAM_SPI_CAM_SPI_PORT",
                                 "range": null,
                                 "title": "SPI Port Number",
                                 "type": "int"
@@ -9059,138 +9080,138 @@
                                 "children": [
                                     {
                                         "children": [],
-                                        "depends_on": "CAMERA_XCLK_USE_LEDC && <choice EXAMPLE_SPI_CAM_XCLK_SOURCE>",
+                                        "depends_on": "CAMERA_XCLK_USE_LEDC && <choice CATFLAPCAM_SPI_CAM_XCLK_SOURCE>",
                                         "help": "Use LED Controller timer to generate camera clock.\nProvides good accuracy and is available on all ESP32 variants.",
-                                        "id": "EXAMPLE_SPI_CAM_XCLK_USE_LEDC",
-                                        "name": "EXAMPLE_SPI_CAM_XCLK_USE_LEDC",
+                                        "id": "CATFLAPCAM_SPI_CAM_XCLK_USE_LEDC",
+                                        "name": "CATFLAPCAM_SPI_CAM_XCLK_USE_LEDC",
                                         "range": null,
                                         "title": "LEDC Timer",
                                         "type": "bool"
                                     },
                                     {
                                         "children": [],
-                                        "depends_on": "CAMERA_XCLK_USE_ESP_CLOCK_ROUTER && <choice EXAMPLE_SPI_CAM_XCLK_SOURCE>",
+                                        "depends_on": "CAMERA_XCLK_USE_ESP_CLOCK_ROUTER && <choice CATFLAPCAM_SPI_CAM_XCLK_SOURCE>",
                                         "help": "Use dedicated clock routing hardware for camera clock.\nProvides better performance and lower jitter when available.",
-                                        "id": "EXAMPLE_SPI_CAM_XCLK_USE_CLOCK_ROUTER",
-                                        "name": "EXAMPLE_SPI_CAM_XCLK_USE_CLOCK_ROUTER",
+                                        "id": "CATFLAPCAM_SPI_CAM_XCLK_USE_CLOCK_ROUTER",
+                                        "name": "CATFLAPCAM_SPI_CAM_XCLK_USE_CLOCK_ROUTER",
                                         "range": null,
                                         "title": "ESP Clock Router",
                                         "type": "bool"
                                     }
                                 ],
-                                "depends_on": "EXAMPLE_ENABLE_SPI_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_ENABLE_SPI_CAM_SENSOR",
                                 "help": "Select the clock source for generating camera sensor XCLK.\n\n- LEDC Timer: Uses LED Controller timer for clock generation\n- ESP Clock Router: Uses dedicated clock routing hardware",
-                                "id": "example-video-initialization-configuration-select-and-set-camera-sensor-interface-spi-select-xclk-source",
-                                "name": "EXAMPLE_SPI_CAM_XCLK_SOURCE",
+                                "id": "catflapcam-video-initialization-configuration-select-and-set-camera-sensor-interface-spi-select-xclk-source",
+                                "name": "CATFLAPCAM_SPI_CAM_XCLK_SOURCE",
                                 "title": "Select XCLK Source",
                                 "type": "choice"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_ENABLE_SPI_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_ENABLE_SPI_CAM_SENSOR",
                                 "help": "Master clock frequency for SPI camera sensor.",
-                                "id": "EXAMPLE_SPI_CAM_XCLK_FREQ",
-                                "name": "EXAMPLE_SPI_CAM_XCLK_FREQ",
+                                "id": "CATFLAPCAM_SPI_CAM_XCLK_FREQ",
+                                "name": "CATFLAPCAM_SPI_CAM_XCLK_FREQ",
                                 "range": null,
                                 "title": "XCLK Frequency (Hz)",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_SPI_CAM_XCLK_USE_LEDC && EXAMPLE_ENABLE_SPI_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_SPI_CAM_XCLK_USE_LEDC && CATFLAPCAM_ENABLE_SPI_CAM_SENSOR",
                                 "help": "LEDC timer number for camera clock generation.",
-                                "id": "EXAMPLE_SPI_CAM_XCLK_TIMER",
-                                "name": "EXAMPLE_SPI_CAM_XCLK_TIMER",
+                                "id": "CATFLAPCAM_SPI_CAM_XCLK_TIMER",
+                                "name": "CATFLAPCAM_SPI_CAM_XCLK_TIMER",
                                 "range": null,
                                 "title": "XCLK LEDC Timer Number",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_SPI_CAM_XCLK_USE_LEDC && EXAMPLE_ENABLE_SPI_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_SPI_CAM_XCLK_USE_LEDC && CATFLAPCAM_ENABLE_SPI_CAM_SENSOR",
                                 "help": "LEDC timer channel for camera clock output.",
-                                "id": "EXAMPLE_SPI_CAM_XCLK_TIMER_CHANNEL",
-                                "name": "EXAMPLE_SPI_CAM_XCLK_TIMER_CHANNEL",
+                                "id": "CATFLAPCAM_SPI_CAM_XCLK_TIMER_CHANNEL",
+                                "name": "CATFLAPCAM_SPI_CAM_XCLK_TIMER_CHANNEL",
                                 "range": null,
                                 "title": "XCLK LEDC Timer Channel",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "!EXAMPLE_SCCB_I2C_INIT_BY_APP && EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_SPI_CAM_SENSOR",
+                                "depends_on": "!CATFLAPCAM_SCCB_I2C_INIT_BY_APP && CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_SPI_CAM_SENSOR",
                                 "help": "GPIO pin for I2C clock signal to camera sensor.",
-                                "id": "EXAMPLE_SPI_SCCB_I2C_SCL_PIN",
-                                "name": "EXAMPLE_SPI_SCCB_I2C_SCL_PIN",
+                                "id": "CATFLAPCAM_SPI_SCCB_I2C_SCL_PIN",
+                                "name": "CATFLAPCAM_SPI_SCCB_I2C_SCL_PIN",
                                 "range": null,
                                 "title": "SCCB(I2C) SCL Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "!EXAMPLE_SCCB_I2C_INIT_BY_APP && EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_SPI_CAM_SENSOR",
+                                "depends_on": "!CATFLAPCAM_SCCB_I2C_INIT_BY_APP && CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_SPI_CAM_SENSOR",
                                 "help": "GPIO pin for I2C data signal to camera sensor.",
-                                "id": "EXAMPLE_SPI_SCCB_I2C_SDA_PIN",
-                                "name": "EXAMPLE_SPI_SCCB_I2C_SDA_PIN",
+                                "id": "CATFLAPCAM_SPI_SCCB_I2C_SDA_PIN",
+                                "name": "CATFLAPCAM_SPI_SCCB_I2C_SDA_PIN",
                                 "range": null,
                                 "title": "SCCB(I2C) SDA Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_SPI_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_SPI_CAM_SENSOR",
                                 "help": "GPIO pin for camera sensor hardware reset.\nSet to -1 if not connected or not required.",
-                                "id": "EXAMPLE_SPI_CAM_SENSOR_RESET_PIN",
-                                "name": "EXAMPLE_SPI_CAM_SENSOR_RESET_PIN",
+                                "id": "CATFLAPCAM_SPI_CAM_SENSOR_RESET_PIN",
+                                "name": "CATFLAPCAM_SPI_CAM_SENSOR_RESET_PIN",
                                 "range": null,
                                 "title": "Reset Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_SPI_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_SPI_CAM_SENSOR",
                                 "help": "GPIO pin for camera sensor power-down control.\nSet to -1 if not connected or not required.",
-                                "id": "EXAMPLE_SPI_CAM_SENSOR_PWDN_PIN",
-                                "name": "EXAMPLE_SPI_CAM_SENSOR_PWDN_PIN",
+                                "id": "CATFLAPCAM_SPI_CAM_SENSOR_PWDN_PIN",
+                                "name": "CATFLAPCAM_SPI_CAM_SENSOR_PWDN_PIN",
                                 "range": null,
                                 "title": "Power Down Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_SPI_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_SPI_CAM_SENSOR",
                                 "help": "GPIO pin for camera sensor master clock output.\nSet to -1 if not connected or not required.",
-                                "id": "EXAMPLE_SPI_CAM_XCLK_PIN",
-                                "name": "EXAMPLE_SPI_CAM_XCLK_PIN",
+                                "id": "CATFLAPCAM_SPI_CAM_XCLK_PIN",
+                                "name": "CATFLAPCAM_SPI_CAM_XCLK_PIN",
                                 "range": null,
                                 "title": "XCLK Output Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_SPI_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_SPI_CAM_SENSOR",
                                 "help": "GPIO pin for SPI chip select signal to camera sensor.",
-                                "id": "EXAMPLE_SPI_CAM_CS_PIN",
-                                "name": "EXAMPLE_SPI_CAM_CS_PIN",
+                                "id": "CATFLAPCAM_SPI_CAM_CS_PIN",
+                                "name": "CATFLAPCAM_SPI_CAM_CS_PIN",
                                 "range": null,
                                 "title": "Chip Select Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_SPI_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_SPI_CAM_SENSOR",
                                 "help": "GPIO pin for SPI clock signal to camera sensor.",
-                                "id": "EXAMPLE_SPI_CAM_SCLK_PIN",
-                                "name": "EXAMPLE_SPI_CAM_SCLK_PIN",
+                                "id": "CATFLAPCAM_SPI_CAM_SCLK_PIN",
+                                "name": "CATFLAPCAM_SPI_CAM_SCLK_PIN",
                                 "range": null,
                                 "title": "Clock Pin",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_ENABLE_SPI_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_ENABLE_SPI_CAM_SENSOR",
                                 "help": "GPIO pin for SPI data input/output to camera sensor.",
-                                "id": "EXAMPLE_SPI_CAM_DATA0_IO_PIN",
-                                "name": "EXAMPLE_SPI_CAM_DATA0_IO_PIN",
+                                "id": "CATFLAPCAM_SPI_CAM_DATA0_IO_PIN",
+                                "name": "CATFLAPCAM_SPI_CAM_DATA0_IO_PIN",
                                 "range": null,
                                 "title": "Data0 I/O Pin",
                                 "type": "int"
@@ -9198,9 +9219,9 @@
                         ],
                         "depends_on": "ESP_VIDEO_ENABLE_SPI_VIDEO_DEVICE",
                         "help": "Serial Peripheral Interface for camera sensors.\nTypically used for lower resolution sensors or special applications.\nRequires fewer GPIO pins than DVP but has lower bandwidth.",
-                        "id": "EXAMPLE_ENABLE_SPI_CAM_SENSOR",
+                        "id": "CATFLAPCAM_ENABLE_SPI_CAM_SENSOR",
                         "is_menuconfig": true,
-                        "name": "EXAMPLE_ENABLE_SPI_CAM_SENSOR",
+                        "name": "CATFLAPCAM_ENABLE_SPI_CAM_SENSOR",
                         "range": null,
                         "title": "SPI",
                         "type": "menu"
@@ -9209,70 +9230,70 @@
                         "children": [
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_ENABLE_USB_UVC_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_ENABLE_USB_UVC_CAM_SENSOR",
                                 "help": "Maximum number of USB UVC (Video Class) devices that can be \nsimultaneously connected and managed by the system.\n\nThis setting determines:\n- How many USB cameras can be used concurrently\n- Memory allocation for device management structures\n- USB host controller resource usage\n\nValues:\n- 1: Single camera operation (default, lowest resource usage)\n- 2-10: Multi-camera setups (requires more RAM and USB bandwidth)\n\nNote: Each additional device increases memory consumption.\nEnsure adequate USB power supply and bandwidth for multiple cameras.",
-                                "id": "EXAMPLE_USB_UVC_DEVICES_NUM",
-                                "name": "EXAMPLE_USB_UVC_DEVICES_NUM",
+                                "id": "CATFLAPCAM_USB_UVC_DEVICES_NUM",
+                                "name": "CATFLAPCAM_USB_UVC_DEVICES_NUM",
                                 "range": null,
                                 "title": "USB UVC Device Number",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_ENABLE_USB_UVC_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_ENABLE_USB_UVC_CAM_SENSOR",
                                 "help": "Stack size (in bytes) for the USB UVC task that handles camera operations.\n\nThis task is responsible for:\n- USB video data processing\n- Frame buffer management\n- Camera control command handling\n\nRecommended values:\n- 4096 bytes: Default, suitable for most applications\n- 6144 bytes: For high-resolution video or complex processing\n- 8192 bytes: For multiple cameras or intensive operations\n\nIncrease if you encounter stack overflow errors or use deep call stacks.",
-                                "id": "EXAMPLE_USB_UVC_TASK_STACK_SIZE",
-                                "name": "EXAMPLE_USB_UVC_TASK_STACK_SIZE",
+                                "id": "CATFLAPCAM_USB_UVC_TASK_STACK_SIZE",
+                                "name": "CATFLAPCAM_USB_UVC_TASK_STACK_SIZE",
                                 "range": null,
                                 "title": "USB UVC Task Stack Size",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_ENABLE_USB_UVC_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_ENABLE_USB_UVC_CAM_SENSOR",
                                 "help": "Task priority for the USB UVC task that handles video data processing (higher numbers = higher priority).\n\nThis controls the scheduling priority of the USB UVC video task relative \nto other application tasks. Higher priority ensures more responsive video \nprocessing and smoother frame handling.\n\nPriority guidelines:\n- 10: Default, balanced priority for most video applications\n- 11-12: Higher priority for low-latency video streaming\n- 13-15: Maximum priority for real-time video processing\n- 6-9: Lower priority if video is not time-critical\n\nNote: Should typically be lower than USB library task priority (11) to ensure\nproper USB stack operation. Very high priorities may impact other system tasks.",
-                                "id": "EXAMPLE_USB_UVC_TASK_PRIORITY",
-                                "name": "EXAMPLE_USB_UVC_TASK_PRIORITY",
+                                "id": "CATFLAPCAM_USB_UVC_TASK_PRIORITY",
+                                "name": "CATFLAPCAM_USB_UVC_TASK_PRIORITY",
                                 "range": null,
                                 "title": "USB UVC Task Priority",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_ENABLE_USB_UVC_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_ENABLE_USB_UVC_CAM_SENSOR",
                                 "help": "CPU core affinity for the USB UVC task execution.\n\nThis determines which CPU core will execute the USB UVC task:\n- -1: No affinity (FreeRTOS scheduler chooses automatically)\n- 0: Pin task to CPU core 0 (Protocol core)\n- 1: Pin task to CPU core 1 (Application core, dual-core only)\n\nRecommendations:\n- Use -1 for automatic load balancing (default)\n- Use 0 to isolate USB processing from application tasks\n- Use 1 to keep USB processing with main application\n\nNote: Core 1 is only available on dual-core ESP32 variants.",
-                                "id": "EXAMPLE_USB_UVC_TASK_AFFINITY",
-                                "name": "EXAMPLE_USB_UVC_TASK_AFFINITY",
+                                "id": "CATFLAPCAM_USB_UVC_TASK_AFFINITY",
+                                "name": "CATFLAPCAM_USB_UVC_TASK_AFFINITY",
                                 "range": null,
                                 "title": "USB UVC Task Affinity",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_ENABLE_USB_UVC_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_ENABLE_USB_UVC_CAM_SENSOR",
                                 "help": "Stack size (in bytes) for the USB library task that manages USB host operations.\n\nThis low-level task handles:\n- USB host controller operations\n- Device enumeration and management\n- USB protocol stack processing\n- Interrupt and event handling\n\nRecommended values:\n- 4096 bytes: Default, suitable for standard USB operations\n- 6144 bytes: For multiple USB devices or complex configurations\n- 8192 bytes: For heavy USB traffic or debugging scenarios\n\nThis is a critical system task - insufficient stack may cause USB failures.",
-                                "id": "EXAMPLE_USB_LIB_TASK_STACK_SIZE",
-                                "name": "EXAMPLE_USB_LIB_TASK_STACK_SIZE",
+                                "id": "CATFLAPCAM_USB_LIB_TASK_STACK_SIZE",
+                                "name": "CATFLAPCAM_USB_LIB_TASK_STACK_SIZE",
                                 "range": null,
                                 "title": "USB Lib Task Stack Size",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_ENABLE_USB_UVC_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_ENABLE_USB_UVC_CAM_SENSOR",
                                 "help": "Task priority for the USB library task (higher numbers = higher priority).\n\nThis controls the scheduling priority of the USB host library task relative \nto other system tasks. Higher priority ensures more responsive USB operations.\n\nPriority guidelines:\n- 11: Default, balanced priority for most applications\n- 12-13: Higher priority for time-sensitive USB operations\n- 14-15: Maximum priority for critical real-time USB requirements\n- 8-10: Lower priority if USB is not performance-critical\n\nNote: Should typically be higher than USB UVC task priority (10) to ensure\nproper USB stack operation. Very high priorities may impact other system tasks.",
-                                "id": "EXAMPLE_USB_LIB_TASK_PRIORITY",
-                                "name": "EXAMPLE_USB_LIB_TASK_PRIORITY",
+                                "id": "CATFLAPCAM_USB_LIB_TASK_PRIORITY",
+                                "name": "CATFLAPCAM_USB_LIB_TASK_PRIORITY",
                                 "range": null,
                                 "title": "USB Lib Task Priority",
                                 "type": "int"
                             },
                             {
                                 "children": [],
-                                "depends_on": "EXAMPLE_ENABLE_USB_UVC_CAM_SENSOR",
+                                "depends_on": "CATFLAPCAM_ENABLE_USB_UVC_CAM_SENSOR",
                                 "help": "CPU core affinity for the USB library task execution.\n\nThis determines which CPU core will execute the critical USB host library task:\n- -1: No affinity (FreeRTOS scheduler chooses automatically)\n- 0: Pin task to CPU core 0 (Protocol core)\n- 1: Pin task to CPU core 1 (Application core, dual-core only)\n\nRecommendations:\n- Use -1 for automatic load balancing (default)\n- Use 0 for dedicated USB processing on protocol core\n- Use 1 if main application runs on core 0\n\nNote: USB lib task handles time-critical USB operations, so core affinity\ncan impact performance. Core 1 is only available on dual-core ESP32 variants.",
-                                "id": "EXAMPLE_USB_LIB_TASK_AFFINITY",
-                                "name": "EXAMPLE_USB_LIB_TASK_AFFINITY",
+                                "id": "CATFLAPCAM_USB_LIB_TASK_AFFINITY",
+                                "name": "CATFLAPCAM_USB_LIB_TASK_AFFINITY",
                                 "range": null,
                                 "title": "USB Lib Affinity",
                                 "type": "int"
@@ -9280,16 +9301,16 @@
                         ],
                         "depends_on": "ESP_VIDEO_ENABLE_USB_UVC_VIDEO_DEVICE",
                         "help": "USB Video Class (UVC) interface for standard USB cameras.\n\nUVC is a standardized USB protocol that enables plug-and-play\nconnectivity with a wide range of USB camera devices without\nrequiring custom drivers.\n\nFeatures:\n- Standard USB interface with no custom drivers needed\n- Support for multiple resolutions and formats\n- Hot-plug capability for dynamic camera connection/disconnection\n- Power and data transmission over single USB cable\n- Compatible with most commercial USB webcams and industrial cameras\n\nIdeal for applications requiring external camera connectivity,\nwebcam integration, or when GPIO pins are limited.",
-                        "id": "EXAMPLE_ENABLE_USB_UVC_CAM_SENSOR",
+                        "id": "CATFLAPCAM_ENABLE_USB_UVC_CAM_SENSOR",
                         "is_menuconfig": true,
-                        "name": "EXAMPLE_ENABLE_USB_UVC_CAM_SENSOR",
+                        "name": "CATFLAPCAM_ENABLE_USB_UVC_CAM_SENSOR",
                         "range": null,
                         "title": "USB-UVC",
                         "type": "menu"
                     }
                 ],
                 "depends_on": null,
-                "id": "example-video-initialization-configuration-select-and-set-camera-sensor-interface",
+                "id": "catflapcam-video-initialization-configuration-select-and-set-camera-sensor-interface",
                 "title": "Select and Set Camera Sensor Interface",
                 "type": "menu"
             },
@@ -9297,10 +9318,10 @@
                 "children": [
                     {
                         "children": [],
-                        "depends_on": "EXAMPLE_SCCB_I2C_INIT_BY_APP",
+                        "depends_on": "CATFLAPCAM_SCCB_I2C_INIT_BY_APP",
                         "help": "I2C port number for all camera sensors and motors.",
-                        "id": "EXAMPLE_SCCB_I2C_PORT_INIT_BY_APP",
-                        "name": "EXAMPLE_SCCB_I2C_PORT_INIT_BY_APP",
+                        "id": "CATFLAPCAM_SCCB_I2C_PORT_INIT_BY_APP",
+                        "name": "CATFLAPCAM_SCCB_I2C_PORT_INIT_BY_APP",
                         "range": [
                             0,
                             2
@@ -9310,10 +9331,10 @@
                     },
                     {
                         "children": [],
-                        "depends_on": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_SCCB_I2C_INIT_BY_APP",
+                        "depends_on": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_SCCB_I2C_INIT_BY_APP",
                         "help": "GPIO pin for I2C clock signal to all camera sensors and motors.",
-                        "id": "EXAMPLE_SCCB_I2C_SCL_PIN_INIT_BY_APP",
-                        "name": "EXAMPLE_SCCB_I2C_SCL_PIN_INIT_BY_APP",
+                        "id": "CATFLAPCAM_SCCB_I2C_SCL_PIN_INIT_BY_APP",
+                        "name": "CATFLAPCAM_SCCB_I2C_SCL_PIN_INIT_BY_APP",
                         "range": [
                             0,
                             54
@@ -9323,10 +9344,10 @@
                     },
                     {
                         "children": [],
-                        "depends_on": "EXAMPLE_SELECT_CUSTOMIZED_DEV_BOARD && EXAMPLE_SCCB_I2C_INIT_BY_APP",
+                        "depends_on": "CATFLAPCAM_SELECT_CUSTOMIZED_DEV_BOARD && CATFLAPCAM_SCCB_I2C_INIT_BY_APP",
                         "help": "GPIO pin for I2C data signal to all camera sensors and motors.",
-                        "id": "EXAMPLE_SCCB_I2C_SDA_PIN_INIT_BY_APP",
-                        "name": "EXAMPLE_SCCB_I2C_SDA_PIN_INIT_BY_APP",
+                        "id": "CATFLAPCAM_SCCB_I2C_SDA_PIN_INIT_BY_APP",
+                        "name": "CATFLAPCAM_SCCB_I2C_SDA_PIN_INIT_BY_APP",
                         "range": [
                             0,
                             54
@@ -9337,9 +9358,9 @@
                 ],
                 "depends_on": null,
                 "help": "Enable this option to use an I2C bus that has been explicitly\ninitialized by your application before camera initialization.\nAll camera sensors including the motors use this I2C bus on the\nspecified port.\n\nBenefits:\n- Allows sharing I2C bus with other devices\n- Provides application control over I2C timing\n- Enables custom I2C configuration\n\nWhen enabled, you must call i2c_master_bus_init() before\ninitializing the camera sensor.",
-                "id": "EXAMPLE_SCCB_I2C_INIT_BY_APP",
+                "id": "CATFLAPCAM_SCCB_I2C_INIT_BY_APP",
                 "is_menuconfig": true,
-                "name": "EXAMPLE_SCCB_I2C_INIT_BY_APP",
+                "name": "CATFLAPCAM_SCCB_I2C_INIT_BY_APP",
                 "range": null,
                 "title": "Use Pre-initialized SCCB(I2C) Bus for All Camera Sensors And Motors",
                 "type": "menu"
@@ -9348,20 +9369,20 @@
                 "children": [
                     {
                         "children": [],
-                        "depends_on": "SOC_JPEG_CODEC_SUPPORTED && <choice EXAMPLE_SELECT_JPEG_ENCODER>",
+                        "depends_on": "SOC_JPEG_CODEC_SUPPORTED && <choice CATFLAPCAM_SELECT_JPEG_ENCODER>",
                         "help": "Use dedicated hardware JPEG encoder for image compression.\n\nAdvantages:\n- Faster encoding speed\n- Lower CPU usage\n- Better power efficiency\n- Hardware-accelerated compression\n\nAvailable on ESP32-P4 and other chips with JPEG codec support.",
-                        "id": "EXAMPLE_SELECT_JPEG_HW_DRIVER",
-                        "name": "EXAMPLE_SELECT_JPEG_HW_DRIVER",
+                        "id": "CATFLAPCAM_SELECT_JPEG_HW_DRIVER",
+                        "name": "CATFLAPCAM_SELECT_JPEG_HW_DRIVER",
                         "range": null,
                         "title": "Hardware JPEG Encoder",
                         "type": "bool"
                     },
                     {
                         "children": [],
-                        "depends_on": "<choice EXAMPLE_SELECT_JPEG_ENCODER>",
+                        "depends_on": "<choice CATFLAPCAM_SELECT_JPEG_ENCODER>",
                         "help": "Use software-based JPEG encoder for image compression.\n\nAdvantages:\n- Compatible with all ESP32 variants\n- No hardware dependencies\n- Flexible compression parameters\n\nTrade-offs:\n- Higher CPU usage\n- Slower encoding speed\n- Higher power consumption",
-                        "id": "EXAMPLE_SELECT_JPEG_ESP_NEW_JPEG",
-                        "name": "EXAMPLE_SELECT_JPEG_ESP_NEW_JPEG",
+                        "id": "CATFLAPCAM_SELECT_JPEG_ESP_NEW_JPEG",
+                        "name": "CATFLAPCAM_SELECT_JPEG_ESP_NEW_JPEG",
                         "range": null,
                         "title": "Software JPEG Encoder (esp_new_jpeg)",
                         "type": "bool"
@@ -9369,845 +9390,15 @@
                 ],
                 "depends_on": null,
                 "help": "Select the JPEG encoder implementation for image compression.\n\n- Hardware JPEG: Uses dedicated JPEG encoding hardware (faster, lower CPU usage)\n- Software JPEG: Uses CPU-based JPEG encoding (compatible with all targets)",
-                "id": "example-video-initialization-configuration-select-jpeg-encoder-type",
-                "name": "EXAMPLE_SELECT_JPEG_ENCODER",
+                "id": "catflapcam-video-initialization-configuration-select-jpeg-encoder-type",
+                "name": "CATFLAPCAM_SELECT_JPEG_ENCODER",
                 "title": "Select JPEG Encoder Type",
                 "type": "choice"
             }
         ],
         "depends_on": null,
-        "id": "example-video-initialization-configuration",
-        "title": "Example Video Initialization Configuration",
-        "type": "menu"
-    },
-    {
-        "children": [
-            {
-                "children": [],
-                "depends_on": null,
-                "help": null,
-                "id": "ENV_GPIO_RANGE_MIN",
-                "name": "ENV_GPIO_RANGE_MIN",
-                "range": null,
-                "title": null,
-                "type": "int"
-            },
-            {
-                "children": [],
-                "depends_on": null,
-                "help": null,
-                "id": "ENV_GPIO_RANGE_MAX",
-                "name": "ENV_GPIO_RANGE_MAX",
-                "range": null,
-                "title": null,
-                "type": "int"
-            },
-            {
-                "children": [],
-                "depends_on": null,
-                "help": null,
-                "id": "ENV_GPIO_IN_RANGE_MAX",
-                "name": "ENV_GPIO_IN_RANGE_MAX",
-                "range": null,
-                "title": null,
-                "type": "int"
-            },
-            {
-                "children": [],
-                "depends_on": null,
-                "help": null,
-                "id": "ENV_GPIO_OUT_RANGE_MAX",
-                "name": "ENV_GPIO_OUT_RANGE_MAX",
-                "range": null,
-                "title": null,
-                "type": "int"
-            },
-            {
-                "children": [
-                    {
-                        "children": [],
-                        "depends_on": "EXAMPLE_CONNECT_WIFI",
-                        "help": "Give the WiFi SSID and password from stdin.",
-                        "id": "EXAMPLE_WIFI_SSID_PWD_FROM_STDIN",
-                        "name": "EXAMPLE_WIFI_SSID_PWD_FROM_STDIN",
-                        "range": null,
-                        "title": "Get ssid and password from stdin",
-                        "type": "bool"
-                    },
-                    {
-                        "children": [],
-                        "depends_on": "!EXAMPLE_WIFI_SSID_PWD_FROM_STDIN && EXAMPLE_CONNECT_WIFI",
-                        "help": "Provide wifi connect commands for esp_console.\nPlease use `example_register_wifi_connect_commands` to register them.",
-                        "id": "EXAMPLE_PROVIDE_WIFI_CONSOLE_CMD",
-                        "name": "EXAMPLE_PROVIDE_WIFI_CONSOLE_CMD",
-                        "range": null,
-                        "title": "Provide wifi connect commands",
-                        "type": "bool"
-                    },
-                    {
-                        "children": [],
-                        "depends_on": "!EXAMPLE_WIFI_SSID_PWD_FROM_STDIN && EXAMPLE_CONNECT_WIFI",
-                        "help": "SSID (network name) for the example to connect to.",
-                        "id": "EXAMPLE_WIFI_SSID",
-                        "name": "EXAMPLE_WIFI_SSID",
-                        "range": null,
-                        "title": "WiFi SSID",
-                        "type": "string"
-                    },
-                    {
-                        "children": [],
-                        "depends_on": "!EXAMPLE_WIFI_SSID_PWD_FROM_STDIN && EXAMPLE_CONNECT_WIFI",
-                        "help": "WiFi password (WPA or WPA2) for the example to use.\nCan be left blank if the network has no security set.",
-                        "id": "EXAMPLE_WIFI_PASSWORD",
-                        "name": "EXAMPLE_WIFI_PASSWORD",
-                        "range": null,
-                        "title": "WiFi Password",
-                        "type": "string"
-                    },
-                    {
-                        "children": [],
-                        "depends_on": "EXAMPLE_CONNECT_WIFI",
-                        "help": "Set the Maximum retry to avoid station reconnecting to the AP unlimited,\nin case the AP is really inexistent.",
-                        "id": "EXAMPLE_WIFI_CONN_MAX_RETRY",
-                        "name": "EXAMPLE_WIFI_CONN_MAX_RETRY",
-                        "range": null,
-                        "title": "Maximum retry",
-                        "type": "int"
-                    },
-                    {
-                        "children": [
-                            {
-                                "children": [],
-                                "depends_on": "<choice EXAMPLE_WIFI_SCAN_METHOD>",
-                                "help": null,
-                                "id": "EXAMPLE_WIFI_SCAN_METHOD_FAST",
-                                "name": "EXAMPLE_WIFI_SCAN_METHOD_FAST",
-                                "range": null,
-                                "title": "Fast",
-                                "type": "bool"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "<choice EXAMPLE_WIFI_SCAN_METHOD>",
-                                "help": null,
-                                "id": "EXAMPLE_WIFI_SCAN_METHOD_ALL_CHANNEL",
-                                "name": "EXAMPLE_WIFI_SCAN_METHOD_ALL_CHANNEL",
-                                "range": null,
-                                "title": "All Channel",
-                                "type": "bool"
-                            }
-                        ],
-                        "depends_on": "EXAMPLE_CONNECT_WIFI",
-                        "help": "WiFi scan method:\n\nIf \"Fast\" is selected, scan will end after find SSID match AP.\n\nIf \"All Channel\" is selected, scan will end after scan all the channel.",
-                        "id": "example-connection-configuration-connect-using-wifi-interface-wifi-scan-method",
-                        "name": "EXAMPLE_WIFI_SCAN_METHOD",
-                        "title": "WiFi Scan Method",
-                        "type": "choice"
-                    },
-                    {
-                        "children": [
-                            {
-                                "children": [],
-                                "depends_on": "EXAMPLE_CONNECT_WIFI",
-                                "help": "The minimum rssi to accept in the scan mode.",
-                                "id": "EXAMPLE_WIFI_SCAN_RSSI_THRESHOLD",
-                                "name": "EXAMPLE_WIFI_SCAN_RSSI_THRESHOLD",
-                                "range": [
-                                    -127,
-                                    0
-                                ],
-                                "title": "WiFi minimum rssi",
-                                "type": "int"
-                            },
-                            {
-                                "children": [
-                                    {
-                                        "children": [],
-                                        "depends_on": "<choice EXAMPLE_WIFI_SCAN_AUTH_MODE_THRESHOLD>",
-                                        "help": null,
-                                        "id": "EXAMPLE_WIFI_AUTH_OPEN",
-                                        "name": "EXAMPLE_WIFI_AUTH_OPEN",
-                                        "range": null,
-                                        "title": "OPEN",
-                                        "type": "bool"
-                                    },
-                                    {
-                                        "children": [],
-                                        "depends_on": "<choice EXAMPLE_WIFI_SCAN_AUTH_MODE_THRESHOLD>",
-                                        "help": null,
-                                        "id": "EXAMPLE_WIFI_AUTH_WEP",
-                                        "name": "EXAMPLE_WIFI_AUTH_WEP",
-                                        "range": null,
-                                        "title": "WEP",
-                                        "type": "bool"
-                                    },
-                                    {
-                                        "children": [],
-                                        "depends_on": "<choice EXAMPLE_WIFI_SCAN_AUTH_MODE_THRESHOLD>",
-                                        "help": null,
-                                        "id": "EXAMPLE_WIFI_AUTH_WPA_PSK",
-                                        "name": "EXAMPLE_WIFI_AUTH_WPA_PSK",
-                                        "range": null,
-                                        "title": "WPA PSK",
-                                        "type": "bool"
-                                    },
-                                    {
-                                        "children": [],
-                                        "depends_on": "<choice EXAMPLE_WIFI_SCAN_AUTH_MODE_THRESHOLD>",
-                                        "help": null,
-                                        "id": "EXAMPLE_WIFI_AUTH_WPA2_PSK",
-                                        "name": "EXAMPLE_WIFI_AUTH_WPA2_PSK",
-                                        "range": null,
-                                        "title": "WPA2 PSK",
-                                        "type": "bool"
-                                    },
-                                    {
-                                        "children": [],
-                                        "depends_on": "<choice EXAMPLE_WIFI_SCAN_AUTH_MODE_THRESHOLD>",
-                                        "help": null,
-                                        "id": "EXAMPLE_WIFI_AUTH_WPA_WPA2_PSK",
-                                        "name": "EXAMPLE_WIFI_AUTH_WPA_WPA2_PSK",
-                                        "range": null,
-                                        "title": "WPA WPA2 PSK",
-                                        "type": "bool"
-                                    },
-                                    {
-                                        "children": [],
-                                        "depends_on": "<choice EXAMPLE_WIFI_SCAN_AUTH_MODE_THRESHOLD>",
-                                        "help": null,
-                                        "id": "EXAMPLE_WIFI_AUTH_WPA2_ENTERPRISE",
-                                        "name": "EXAMPLE_WIFI_AUTH_WPA2_ENTERPRISE",
-                                        "range": null,
-                                        "title": "WPA2 ENTERPRISE",
-                                        "type": "bool"
-                                    },
-                                    {
-                                        "children": [],
-                                        "depends_on": "<choice EXAMPLE_WIFI_SCAN_AUTH_MODE_THRESHOLD>",
-                                        "help": null,
-                                        "id": "EXAMPLE_WIFI_AUTH_WPA3_PSK",
-                                        "name": "EXAMPLE_WIFI_AUTH_WPA3_PSK",
-                                        "range": null,
-                                        "title": "WPA3 PSK",
-                                        "type": "bool"
-                                    },
-                                    {
-                                        "children": [],
-                                        "depends_on": "<choice EXAMPLE_WIFI_SCAN_AUTH_MODE_THRESHOLD>",
-                                        "help": null,
-                                        "id": "EXAMPLE_WIFI_AUTH_WPA2_WPA3_PSK",
-                                        "name": "EXAMPLE_WIFI_AUTH_WPA2_WPA3_PSK",
-                                        "range": null,
-                                        "title": "WPA2 WPA3 PSK",
-                                        "type": "bool"
-                                    },
-                                    {
-                                        "children": [],
-                                        "depends_on": "<choice EXAMPLE_WIFI_SCAN_AUTH_MODE_THRESHOLD>",
-                                        "help": null,
-                                        "id": "EXAMPLE_WIFI_AUTH_WAPI_PSK",
-                                        "name": "EXAMPLE_WIFI_AUTH_WAPI_PSK",
-                                        "range": null,
-                                        "title": "WAPI PSK",
-                                        "type": "bool"
-                                    }
-                                ],
-                                "depends_on": "EXAMPLE_CONNECT_WIFI",
-                                "help": "The weakest authmode to accept in the scan mode.",
-                                "id": "example-connection-configuration-connect-using-wifi-interface-wifi-scan-threshold-wifi-scan-auth-mode-threshold",
-                                "name": "EXAMPLE_WIFI_SCAN_AUTH_MODE_THRESHOLD",
-                                "title": "WiFi Scan auth mode threshold",
-                                "type": "choice"
-                            }
-                        ],
-                        "depends_on": "EXAMPLE_CONNECT_WIFI",
-                        "id": "example-connection-configuration-connect-using-wifi-interface-wifi-scan-threshold",
-                        "title": "WiFi Scan threshold",
-                        "type": "menu"
-                    },
-                    {
-                        "children": [
-                            {
-                                "children": [],
-                                "depends_on": "<choice EXAMPLE_WIFI_CONNECT_AP_SORT_METHOD>",
-                                "help": null,
-                                "id": "EXAMPLE_WIFI_CONNECT_AP_BY_SIGNAL",
-                                "name": "EXAMPLE_WIFI_CONNECT_AP_BY_SIGNAL",
-                                "range": null,
-                                "title": "Signal",
-                                "type": "bool"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "<choice EXAMPLE_WIFI_CONNECT_AP_SORT_METHOD>",
-                                "help": null,
-                                "id": "EXAMPLE_WIFI_CONNECT_AP_BY_SECURITY",
-                                "name": "EXAMPLE_WIFI_CONNECT_AP_BY_SECURITY",
-                                "range": null,
-                                "title": "Security",
-                                "type": "bool"
-                            }
-                        ],
-                        "depends_on": "EXAMPLE_CONNECT_WIFI",
-                        "help": "WiFi connect AP sort method:\n\nIf \"Signal\" is selected, Sort matched APs in scan list by RSSI.\n\nIf \"Security\" is selected, Sort matched APs in scan list by security mode.",
-                        "id": "example-connection-configuration-connect-using-wifi-interface-wifi-connect-ap-sort-method",
-                        "name": "EXAMPLE_WIFI_CONNECT_AP_SORT_METHOD",
-                        "title": "WiFi Connect AP Sort Method",
-                        "type": "choice"
-                    }
-                ],
-                "depends_on": "!IDF_TARGET_LINUX && (SOC_WIFI_SUPPORTED || ESP_WIFI_REMOTE_ENABLED || ESP_HOST_WIFI_ENABLED)",
-                "help": "Protocol examples can use Wi-Fi, Ethernet and/or Thread to connect to the network.\nChoose this option to connect with WiFi",
-                "id": "EXAMPLE_CONNECT_WIFI",
-                "name": "EXAMPLE_CONNECT_WIFI",
-                "range": null,
-                "title": "connect using WiFi interface",
-                "type": "bool"
-            },
-            {
-                "children": [
-                    {
-                        "children": [],
-                        "depends_on": "EXAMPLE_CONNECT_ETHERNET",
-                        "help": "This set stack size for emac_rx task",
-                        "id": "EXAMPLE_ETHERNET_EMAC_TASK_STACK_SIZE",
-                        "name": "EXAMPLE_ETHERNET_EMAC_TASK_STACK_SIZE",
-                        "range": null,
-                        "title": "emac_rx task stack size",
-                        "type": "int"
-                    },
-                    {
-                        "children": [],
-                        "depends_on": "EXAMPLE_CONNECT_ETHERNET",
-                        "help": null,
-                        "id": "EXAMPLE_USE_SPI_ETHERNET",
-                        "name": "EXAMPLE_USE_SPI_ETHERNET",
-                        "range": null,
-                        "title": null,
-                        "type": "bool"
-                    },
-                    {
-                        "children": [
-                            {
-                                "children": [],
-                                "depends_on": "SOC_EMAC_SUPPORTED && <choice EXAMPLE_ETHERNET_TYPE>",
-                                "help": "Select internal Ethernet MAC controller.",
-                                "id": "EXAMPLE_USE_INTERNAL_ETHERNET",
-                                "name": "EXAMPLE_USE_INTERNAL_ETHERNET",
-                                "range": null,
-                                "title": "Internal EMAC",
-                                "type": "bool"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "<choice EXAMPLE_ETHERNET_TYPE>",
-                                "help": "Select external SPI-Ethernet module.",
-                                "id": "EXAMPLE_USE_DM9051",
-                                "name": "EXAMPLE_USE_DM9051",
-                                "range": null,
-                                "title": "DM9051 Module",
-                                "type": "bool"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "<choice EXAMPLE_ETHERNET_TYPE>",
-                                "help": "Select external SPI-Ethernet module (W5500).",
-                                "id": "EXAMPLE_USE_W5500",
-                                "name": "EXAMPLE_USE_W5500",
-                                "range": null,
-                                "title": "W5500 Module",
-                                "type": "bool"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "<choice EXAMPLE_ETHERNET_TYPE>",
-                                "help": "When this option is enabled, the example is built with support for\nOpenCores Ethernet MAC, which allows testing the example in QEMU.\nNote that this option is used for internal testing purposes, and\nnot officially supported. Examples built with this option enabled\nwill not run on a real ESP32 chip.",
-                                "id": "EXAMPLE_USE_OPENETH",
-                                "name": "EXAMPLE_USE_OPENETH",
-                                "range": null,
-                                "title": "OpenCores Ethernet MAC (EXPERIMENTAL)",
-                                "type": "bool"
-                            }
-                        ],
-                        "depends_on": "EXAMPLE_CONNECT_ETHERNET",
-                        "help": "Select which kind of Ethernet will be used in the example.",
-                        "id": "example-connection-configuration-connect-using-ethernet-interface-ethernet-type",
-                        "name": "EXAMPLE_ETHERNET_TYPE",
-                        "title": "Ethernet Type",
-                        "type": "choice"
-                    },
-                    {
-                        "children": [
-                            {
-                                "children": [],
-                                "depends_on": "<choice EXAMPLE_ETH_PHY_MODEL>",
-                                "help": "Any Ethernet PHY chip compliant with IEEE 802.3 can be used. However, while\nbasic functionality should always work, some specific features might be limited,\neven if the PHY meets IEEE 802.3 standard. A typical example is loopback\nfunctionality, where certain PHYs may require setting a specific speed mode to\noperate correctly.",
-                                "id": "EXAMPLE_ETH_PHY_GENERIC",
-                                "name": "EXAMPLE_ETH_PHY_GENERIC",
-                                "range": null,
-                                "title": "Generic 802.3 PHY",
-                                "type": "bool"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "<choice EXAMPLE_ETH_PHY_MODEL>",
-                                "help": "IP101 is a single port 10/100 MII/RMII/TP/Fiber Fast Ethernet Transceiver.\nGoto http://www.icplus.com.tw/pp-IP101G.html for more information about it.",
-                                "id": "EXAMPLE_ETH_PHY_IP101",
-                                "name": "EXAMPLE_ETH_PHY_IP101",
-                                "range": null,
-                                "title": "IP101",
-                                "type": "bool"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "<choice EXAMPLE_ETH_PHY_MODEL>",
-                                "help": "RTL8201F/SR8201F is a single port 10/100Mb Ethernet Transceiver with auto MDIX.\nGoto http://www.corechip-sz.com/productsview.asp?id=22 for more information about it.",
-                                "id": "EXAMPLE_ETH_PHY_RTL8201",
-                                "name": "EXAMPLE_ETH_PHY_RTL8201",
-                                "range": null,
-                                "title": "RTL8201/SR8201",
-                                "type": "bool"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "<choice EXAMPLE_ETH_PHY_MODEL>",
-                                "help": "Below chips are supported:\nLAN8710A is a small footprint MII/RMII 10/100 Ethernet Transceiver with HP Auto-MDIX and\n    flexPWR\u00ae Technology.\nLAN8720A is a small footprint RMII 10/100 Ethernet Transceiver with HP Auto-MDIX Support.\nLAN8740A/LAN8741A is a small footprint MII/RMII 10/100 Energy Efficient Ethernet Transceiver\n    with HP Auto-MDIX and flexPWR\u00ae Technology.\nLAN8742A is a small footprint RMII 10/100 Ethernet Transceiver with HP Auto-MDIX and\n    flexPWR\u00ae Technology.\nGoto https://www.microchip.com for more information about them.",
-                                "id": "EXAMPLE_ETH_PHY_LAN87XX",
-                                "name": "EXAMPLE_ETH_PHY_LAN87XX",
-                                "range": null,
-                                "title": "LAN87xx",
-                                "type": "bool"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "<choice EXAMPLE_ETH_PHY_MODEL>",
-                                "help": "DP83848 is a single port 10/100Mb/s Ethernet Physical Layer Transceiver.\nGoto http://www.ti.com/product/DP83848J for more information about it.",
-                                "id": "EXAMPLE_ETH_PHY_DP83848",
-                                "name": "EXAMPLE_ETH_PHY_DP83848",
-                                "range": null,
-                                "title": "DP83848",
-                                "type": "bool"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "<choice EXAMPLE_ETH_PHY_MODEL>",
-                                "help": "With the KSZ80xx series, Microchip offers single-chip 10BASE-T/100BASE-TX\nEthernet Physical Layer Transceivers (PHY).\nThe following chips are supported: KSZ8001, KSZ8021, KSZ8031, KSZ8041,\n    KSZ8051, KSZ8061, KSZ8081, KSZ8091\nGoto https://www.microchip.com for more information about them.",
-                                "id": "EXAMPLE_ETH_PHY_KSZ80XX",
-                                "name": "EXAMPLE_ETH_PHY_KSZ80XX",
-                                "range": null,
-                                "title": "KSZ80xx",
-                                "type": "bool"
-                            }
-                        ],
-                        "depends_on": "EXAMPLE_USE_INTERNAL_ETHERNET && EXAMPLE_CONNECT_ETHERNET",
-                        "help": "Select the Ethernet PHY device to use in the example.",
-                        "id": "example-connection-configuration-connect-using-ethernet-interface-ethernet-phy-device",
-                        "name": "EXAMPLE_ETH_PHY_MODEL",
-                        "title": "Ethernet PHY Device",
-                        "type": "choice"
-                    },
-                    {
-                        "children": [],
-                        "depends_on": "EXAMPLE_USE_INTERNAL_ETHERNET && EXAMPLE_CONNECT_ETHERNET",
-                        "help": "Set the GPIO number used by SMI MDC.",
-                        "id": "EXAMPLE_ETH_MDC_GPIO",
-                        "name": "EXAMPLE_ETH_MDC_GPIO",
-                        "range": null,
-                        "title": "SMI MDC GPIO number",
-                        "type": "int"
-                    },
-                    {
-                        "children": [],
-                        "depends_on": "EXAMPLE_USE_INTERNAL_ETHERNET && EXAMPLE_CONNECT_ETHERNET",
-                        "help": "Set the GPIO number used by SMI MDIO.",
-                        "id": "EXAMPLE_ETH_MDIO_GPIO",
-                        "name": "EXAMPLE_ETH_MDIO_GPIO",
-                        "range": null,
-                        "title": "SMI MDIO GPIO number",
-                        "type": "int"
-                    },
-                    {
-                        "children": [],
-                        "depends_on": "EXAMPLE_USE_SPI_ETHERNET && EXAMPLE_CONNECT_ETHERNET",
-                        "help": "Set the SPI host used to communicate with the SPI Ethernet Controller.",
-                        "id": "EXAMPLE_ETH_SPI_HOST",
-                        "name": "EXAMPLE_ETH_SPI_HOST",
-                        "range": null,
-                        "title": "SPI Host Number",
-                        "type": "int"
-                    },
-                    {
-                        "children": [],
-                        "depends_on": "EXAMPLE_USE_SPI_ETHERNET && EXAMPLE_CONNECT_ETHERNET",
-                        "help": "Set the GPIO number used by SPI SCLK.",
-                        "id": "EXAMPLE_ETH_SPI_SCLK_GPIO",
-                        "name": "EXAMPLE_ETH_SPI_SCLK_GPIO",
-                        "range": null,
-                        "title": "SPI SCLK GPIO number",
-                        "type": "int"
-                    },
-                    {
-                        "children": [],
-                        "depends_on": "EXAMPLE_USE_SPI_ETHERNET && EXAMPLE_CONNECT_ETHERNET",
-                        "help": "Set the GPIO number used by SPI MOSI.",
-                        "id": "EXAMPLE_ETH_SPI_MOSI_GPIO",
-                        "name": "EXAMPLE_ETH_SPI_MOSI_GPIO",
-                        "range": null,
-                        "title": "SPI MOSI GPIO number",
-                        "type": "int"
-                    },
-                    {
-                        "children": [],
-                        "depends_on": "EXAMPLE_USE_SPI_ETHERNET && EXAMPLE_CONNECT_ETHERNET",
-                        "help": "Set the GPIO number used by SPI MISO.",
-                        "id": "EXAMPLE_ETH_SPI_MISO_GPIO",
-                        "name": "EXAMPLE_ETH_SPI_MISO_GPIO",
-                        "range": null,
-                        "title": "SPI MISO GPIO number",
-                        "type": "int"
-                    },
-                    {
-                        "children": [],
-                        "depends_on": "EXAMPLE_USE_SPI_ETHERNET && EXAMPLE_CONNECT_ETHERNET",
-                        "help": "Set the GPIO number used by SPI CS.",
-                        "id": "EXAMPLE_ETH_SPI_CS_GPIO",
-                        "name": "EXAMPLE_ETH_SPI_CS_GPIO",
-                        "range": null,
-                        "title": "SPI CS GPIO number",
-                        "type": "int"
-                    },
-                    {
-                        "children": [],
-                        "depends_on": "EXAMPLE_USE_SPI_ETHERNET && EXAMPLE_CONNECT_ETHERNET",
-                        "help": "Set the clock speed (MHz) of SPI interface.",
-                        "id": "EXAMPLE_ETH_SPI_CLOCK_MHZ",
-                        "name": "EXAMPLE_ETH_SPI_CLOCK_MHZ",
-                        "range": null,
-                        "title": "SPI clock speed (MHz)",
-                        "type": "int"
-                    },
-                    {
-                        "children": [],
-                        "depends_on": "EXAMPLE_USE_SPI_ETHERNET && EXAMPLE_CONNECT_ETHERNET",
-                        "help": "Set the GPIO number used by the SPI Ethernet module interrupt line.",
-                        "id": "EXAMPLE_ETH_SPI_INT_GPIO",
-                        "name": "EXAMPLE_ETH_SPI_INT_GPIO",
-                        "range": null,
-                        "title": "Interrupt GPIO number",
-                        "type": "int"
-                    },
-                    {
-                        "children": [],
-                        "depends_on": "EXAMPLE_CONNECT_ETHERNET",
-                        "help": "Set the GPIO number used to reset PHY chip.\nSet to -1 to disable PHY chip hardware reset.",
-                        "id": "EXAMPLE_ETH_PHY_RST_GPIO",
-                        "name": "EXAMPLE_ETH_PHY_RST_GPIO",
-                        "range": null,
-                        "title": "PHY Reset GPIO number",
-                        "type": "int"
-                    },
-                    {
-                        "children": [],
-                        "depends_on": "EXAMPLE_CONNECT_ETHERNET",
-                        "help": "Set PHY address according your board schematic.",
-                        "id": "EXAMPLE_ETH_PHY_ADDR",
-                        "name": "EXAMPLE_ETH_PHY_ADDR",
-                        "range": null,
-                        "title": "PHY Address",
-                        "type": "int"
-                    }
-                ],
-                "depends_on": "!IDF_TARGET_LINUX",
-                "help": "Protocol examples can use Wi-Fi, Ethernet and/or Thread to connect to the network.\nChoose this option to connect with Ethernet",
-                "id": "EXAMPLE_CONNECT_ETHERNET",
-                "name": "EXAMPLE_CONNECT_ETHERNET",
-                "range": null,
-                "title": "connect using Ethernet interface",
-                "type": "bool"
-            },
-            {
-                "children": [
-                    {
-                        "children": [
-                            {
-                                "children": [],
-                                "depends_on": "SOC_USB_OTG_SUPPORTED && <choice EXAMPLE_CONNECT_PPP_DEVICE>",
-                                "help": "Use USB ACM device.",
-                                "id": "EXAMPLE_CONNECT_PPP_DEVICE_USB",
-                                "name": "EXAMPLE_CONNECT_PPP_DEVICE_USB",
-                                "range": null,
-                                "title": "USB",
-                                "type": "bool"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "<choice EXAMPLE_CONNECT_PPP_DEVICE>",
-                                "help": "Use UART.",
-                                "id": "EXAMPLE_CONNECT_PPP_DEVICE_UART",
-                                "name": "EXAMPLE_CONNECT_PPP_DEVICE_UART",
-                                "range": null,
-                                "title": "UART",
-                                "type": "bool"
-                            }
-                        ],
-                        "depends_on": "EXAMPLE_CONNECT_PPP",
-                        "help": "Select which peripheral to use to connect to the PPP server.",
-                        "id": "example-connection-configuration-connect-using-point-to-point-interface-choose-ppp-device",
-                        "name": "EXAMPLE_CONNECT_PPP_DEVICE",
-                        "title": "Choose PPP device",
-                        "type": "choice"
-                    },
-                    {
-                        "children": [
-                            {
-                                "children": [],
-                                "depends_on": "EXAMPLE_CONNECT_PPP_DEVICE_UART && EXAMPLE_CONNECT_PPP",
-                                "help": "Pin number of UART TX.",
-                                "id": "EXAMPLE_CONNECT_UART_TX_PIN",
-                                "name": "EXAMPLE_CONNECT_UART_TX_PIN",
-                                "range": null,
-                                "title": "TXD Pin Number",
-                                "type": "int"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "EXAMPLE_CONNECT_PPP_DEVICE_UART && EXAMPLE_CONNECT_PPP",
-                                "help": "Pin number of UART RX.",
-                                "id": "EXAMPLE_CONNECT_UART_RX_PIN",
-                                "name": "EXAMPLE_CONNECT_UART_RX_PIN",
-                                "range": null,
-                                "title": "RXD Pin Number",
-                                "type": "int"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "EXAMPLE_CONNECT_PPP_DEVICE_UART && EXAMPLE_CONNECT_PPP",
-                                "help": "Baudrate of the UART device",
-                                "id": "EXAMPLE_CONNECT_UART_BAUDRATE",
-                                "name": "EXAMPLE_CONNECT_UART_BAUDRATE",
-                                "range": null,
-                                "title": "UART Baudrate",
-                                "type": "int"
-                            }
-                        ],
-                        "depends_on": "EXAMPLE_CONNECT_PPP_DEVICE_UART && EXAMPLE_CONNECT_PPP",
-                        "id": "example-connection-configuration-connect-using-point-to-point-interface-uart-configuration",
-                        "title": "UART Configuration",
-                        "type": "menu"
-                    },
-                    {
-                        "children": [],
-                        "depends_on": "EXAMPLE_CONNECT_PPP",
-                        "help": "Set the Maximum retry to avoid station reconnecting if the pppd\nis not available",
-                        "id": "EXAMPLE_PPP_CONN_MAX_RETRY",
-                        "name": "EXAMPLE_PPP_CONN_MAX_RETRY",
-                        "range": null,
-                        "title": "Maximum retry",
-                        "type": "int"
-                    }
-                ],
-                "depends_on": null,
-                "help": "Protocol examples can use PPP connection over serial line.\nChoose this option to connect to the ppp server running\non your laptop over a serial line (either UART or USB ACM)",
-                "id": "EXAMPLE_CONNECT_PPP",
-                "name": "EXAMPLE_CONNECT_PPP",
-                "range": null,
-                "title": "connect using Point to Point interface",
-                "type": "bool"
-            },
-            {
-                "children": [
-                    {
-                        "children": [],
-                        "depends_on": "EXAMPLE_CONNECT_THREAD",
-                        "help": "Thread task stack size",
-                        "id": "EXAMPLE_THREAD_TASK_STACK_SIZE",
-                        "name": "EXAMPLE_THREAD_TASK_STACK_SIZE",
-                        "range": null,
-                        "title": "Example Thread task stack size",
-                        "type": "int"
-                    },
-                    {
-                        "children": [
-                            {
-                                "children": [],
-                                "depends_on": "OPENTHREAD_RADIO_SPINEL_UART && (OPENTHREAD_RADIO_SPINEL_UART || OPENTHREAD_RADIO_SPINEL_SPI) && EXAMPLE_CONNECT_THREAD",
-                                "help": null,
-                                "id": "EXAMPLE_THREAD_UART_RX_PIN",
-                                "name": "EXAMPLE_THREAD_UART_RX_PIN",
-                                "range": null,
-                                "title": "Uart Rx Pin",
-                                "type": "int"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "OPENTHREAD_RADIO_SPINEL_UART && (OPENTHREAD_RADIO_SPINEL_UART || OPENTHREAD_RADIO_SPINEL_SPI) && EXAMPLE_CONNECT_THREAD",
-                                "help": null,
-                                "id": "EXAMPLE_THREAD_UART_TX_PIN",
-                                "name": "EXAMPLE_THREAD_UART_TX_PIN",
-                                "range": null,
-                                "title": "Uart Tx pin",
-                                "type": "int"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "OPENTHREAD_RADIO_SPINEL_UART && (OPENTHREAD_RADIO_SPINEL_UART || OPENTHREAD_RADIO_SPINEL_SPI) && EXAMPLE_CONNECT_THREAD",
-                                "help": null,
-                                "id": "EXAMPLE_THREAD_UART_BAUD",
-                                "name": "EXAMPLE_THREAD_UART_BAUD",
-                                "range": null,
-                                "title": "Uart baud rate",
-                                "type": "int"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "OPENTHREAD_RADIO_SPINEL_UART && (OPENTHREAD_RADIO_SPINEL_UART || OPENTHREAD_RADIO_SPINEL_SPI) && EXAMPLE_CONNECT_THREAD",
-                                "help": null,
-                                "id": "EXAMPLE_THREAD_UART_PORT",
-                                "name": "EXAMPLE_THREAD_UART_PORT",
-                                "range": null,
-                                "title": "Uart port",
-                                "type": "int"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "OPENTHREAD_RADIO_SPINEL_SPI && (OPENTHREAD_RADIO_SPINEL_UART || OPENTHREAD_RADIO_SPINEL_SPI) && EXAMPLE_CONNECT_THREAD",
-                                "help": null,
-                                "id": "EXAMPLE_THREAD_SPI_CS_PIN",
-                                "name": "EXAMPLE_THREAD_SPI_CS_PIN",
-                                "range": null,
-                                "title": "SPI CS Pin",
-                                "type": "int"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "OPENTHREAD_RADIO_SPINEL_SPI && (OPENTHREAD_RADIO_SPINEL_UART || OPENTHREAD_RADIO_SPINEL_SPI) && EXAMPLE_CONNECT_THREAD",
-                                "help": null,
-                                "id": "EXAMPLE_THREAD_SPI_SCLK_PIN",
-                                "name": "EXAMPLE_THREAD_SPI_SCLK_PIN",
-                                "range": null,
-                                "title": "SPI SCLK Pin",
-                                "type": "int"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "OPENTHREAD_RADIO_SPINEL_SPI && (OPENTHREAD_RADIO_SPINEL_UART || OPENTHREAD_RADIO_SPINEL_SPI) && EXAMPLE_CONNECT_THREAD",
-                                "help": null,
-                                "id": "EXAMPLE_THREAD_SPI_MISO_PIN",
-                                "name": "EXAMPLE_THREAD_SPI_MISO_PIN",
-                                "range": null,
-                                "title": "SPI MISO Pin",
-                                "type": "int"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "OPENTHREAD_RADIO_SPINEL_SPI && (OPENTHREAD_RADIO_SPINEL_UART || OPENTHREAD_RADIO_SPINEL_SPI) && EXAMPLE_CONNECT_THREAD",
-                                "help": null,
-                                "id": "EXAMPLE_THREAD_SPI_MOSI_PIN",
-                                "name": "EXAMPLE_THREAD_SPI_MOSI_PIN",
-                                "range": null,
-                                "title": "SPI MOSI Pin",
-                                "type": "int"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "OPENTHREAD_RADIO_SPINEL_SPI && (OPENTHREAD_RADIO_SPINEL_UART || OPENTHREAD_RADIO_SPINEL_SPI) && EXAMPLE_CONNECT_THREAD",
-                                "help": null,
-                                "id": "EXAMPLE_THREAD_SPI_INTR_PIN",
-                                "name": "EXAMPLE_THREAD_SPI_INTR_PIN",
-                                "range": null,
-                                "title": "SPI Interrupt Pin",
-                                "type": "int"
-                            }
-                        ],
-                        "depends_on": "(OPENTHREAD_RADIO_SPINEL_UART || OPENTHREAD_RADIO_SPINEL_SPI) && EXAMPLE_CONNECT_THREAD",
-                        "id": "example-connection-configuration-connect-using-thread-interface-radio-spinel-options",
-                        "title": "Radio Spinel Options",
-                        "type": "menu"
-                    }
-                ],
-                "depends_on": "!IDF_TARGET_LINUX && OPENTHREAD_ENABLED",
-                "help": "Protocol examples can use Wi-Fi, Ethernet and/or Thread to connect to the network.\nChoose this option to connect with Thread.\nThe operational active dataset of the Thread network can be configured in openthread\ncomponent at '->Components->OpenThread->Thread Core Features->Thread Operational Dataset'",
-                "id": "EXAMPLE_CONNECT_THREAD",
-                "name": "EXAMPLE_CONNECT_THREAD",
-                "range": null,
-                "title": "Connect using Thread interface",
-                "type": "bool"
-            },
-            {
-                "children": [],
-                "depends_on": "LWIP_IPV4",
-                "help": null,
-                "id": "EXAMPLE_CONNECT_IPV4",
-                "name": "EXAMPLE_CONNECT_IPV4",
-                "range": null,
-                "title": null,
-                "type": "bool"
-            },
-            {
-                "children": [
-                    {
-                        "children": [
-                            {
-                                "children": [],
-                                "depends_on": "<choice EXAMPLE_CONNECT_PREFERRED_IPV6>",
-                                "help": "Blocks until Local link address assigned.",
-                                "id": "EXAMPLE_CONNECT_IPV6_PREF_LOCAL_LINK",
-                                "name": "EXAMPLE_CONNECT_IPV6_PREF_LOCAL_LINK",
-                                "range": null,
-                                "title": "Local Link Address",
-                                "type": "bool"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "<choice EXAMPLE_CONNECT_PREFERRED_IPV6>",
-                                "help": "Blocks until Global address assigned.",
-                                "id": "EXAMPLE_CONNECT_IPV6_PREF_GLOBAL",
-                                "name": "EXAMPLE_CONNECT_IPV6_PREF_GLOBAL",
-                                "range": null,
-                                "title": "Global Address",
-                                "type": "bool"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "<choice EXAMPLE_CONNECT_PREFERRED_IPV6>",
-                                "help": "Blocks until Site link address assigned.",
-                                "id": "EXAMPLE_CONNECT_IPV6_PREF_SITE_LOCAL",
-                                "name": "EXAMPLE_CONNECT_IPV6_PREF_SITE_LOCAL",
-                                "range": null,
-                                "title": "Site Local Address",
-                                "type": "bool"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "<choice EXAMPLE_CONNECT_PREFERRED_IPV6>",
-                                "help": "Blocks until Unique local address assigned.",
-                                "id": "EXAMPLE_CONNECT_IPV6_PREF_UNIQUE_LOCAL",
-                                "name": "EXAMPLE_CONNECT_IPV6_PREF_UNIQUE_LOCAL",
-                                "range": null,
-                                "title": "Unique Local Link Address",
-                                "type": "bool"
-                            }
-                        ],
-                        "depends_on": "EXAMPLE_CONNECT_IPV6",
-                        "help": "Select which kind of IPv6 address the connect logic waits for.",
-                        "id": "example-connection-configuration-obtain-ipv6-address-preferred-ipv6-type",
-                        "name": "EXAMPLE_CONNECT_PREFERRED_IPV6",
-                        "title": "Preferred IPv6 Type",
-                        "type": "choice"
-                    }
-                ],
-                "depends_on": "EXAMPLE_CONNECT_WIFI || EXAMPLE_CONNECT_ETHERNET || EXAMPLE_CONNECT_PPP || EXAMPLE_CONNECT_THREAD",
-                "help": "By default, examples will wait until IPv4 and IPv6 local link addresses are obtained.\nDisable this option if the network does not support IPv6.\nChoose the preferred IPv6 address type if the connection code should wait until other than\nthe local link address gets assigned.\nConsider enabling IPv6 stateless address autoconfiguration (SLAAC) in the LWIP component.",
-                "id": "EXAMPLE_CONNECT_IPV6",
-                "name": "EXAMPLE_CONNECT_IPV6",
-                "range": null,
-                "title": "Obtain IPv6 address",
-                "type": "bool"
-            }
-        ],
-        "depends_on": null,
-        "id": "example-connection-configuration",
-        "title": "Example Connection Configuration",
+        "id": "catflapcam-video-initialization-configuration",
+        "title": "Catflapcam Video Initialization Configuration",
         "type": "menu"
     },
     {
@@ -32021,7 +31212,10 @@
                         "help": "Config max number of IPv6 packets to queue during MAC resolution.",
                         "id": "LWIP_IPV6_MEMP_NUM_ND6_QUEUE",
                         "name": "LWIP_IPV6_MEMP_NUM_ND6_QUEUE",
-                        "range": null,
+                        "range": [
+                            3,
+                            20
+                        ],
                         "title": "Max number of IPv6 packets to queue during MAC resolution",
                         "type": "int"
                     },
@@ -32031,7 +31225,10 @@
                         "help": "Config max number of entries in IPv6 neighbor cache",
                         "id": "LWIP_IPV6_ND6_NUM_NEIGHBORS",
                         "name": "LWIP_IPV6_ND6_NUM_NEIGHBORS",
-                        "range": null,
+                        "range": [
+                            3,
+                            10
+                        ],
                         "title": "Max number of entries in IPv6 neighbor cache",
                         "type": "int"
                     },
@@ -43583,12 +42780,32 @@
                     },
                     {
                         "children": [],
+                        "depends_on": "ESP_HOSTED_ENABLED",
+                        "help": "Enable the Memory Monitor Interface. Host can query co-processor to get\ninformation on heap size or get an event when heap falls below a set threshold.",
+                        "id": "ESP_HOSTED_MEM_MONITOR",
+                        "name": "ESP_HOSTED_MEM_MONITOR",
+                        "range": null,
+                        "title": "Enable Memory Monitor Interface",
+                        "type": "bool"
+                    },
+                    {
+                        "children": [],
                         "depends_on": "SLAVE_SOC_WIFI_HE_SUPPORT && ESP_HOSTED_ENABLED",
                         "help": "Enable Wi-Fi iTWT (individual Target Wake Time) APIs on Host. Using the API, Host\ncan instruct the co-processor to negotiate specific wake and sleep schedules with\nthe access point (AP) for lower power consumption.",
                         "id": "ESP_HOSTED_ENABLE_ITWT",
                         "name": "ESP_HOSTED_ENABLE_ITWT",
                         "range": null,
                         "title": "Enable iTWT support",
+                        "type": "bool"
+                    },
+                    {
+                        "children": [],
+                        "depends_on": "ESP_HOSTED_ENABLED",
+                        "help": "Automatically trigger WiFi connect from host when slave station starts.\nGenerally should be disabled to give application control over connection timing.\nWhen disabled, application must explicitly call esp_wifi_connect() after\nreceiving WIFI_EVENT_STA_START event.",
+                        "id": "ESP_HOSTED_WIFI_AUTO_CONNECT_ON_STA_START",
+                        "name": "ESP_HOSTED_WIFI_AUTO_CONNECT_ON_STA_START",
+                        "range": null,
+                        "title": "Auto-connect WiFi at host on STA_START event",
                         "type": "bool"
                     },
                     {
@@ -44023,6 +43240,26 @@
                                 "children": [
                                     {
                                         "children": [
+                                            {
+                                                "children": [],
+                                                "depends_on": "ESP_HOSTED_HOST_DEEP_SLEEP_ALLOWED && ESP_HOSTED_ENABLED",
+                                                "help": null,
+                                                "id": "ESP_HOSTED_HOST_WAKEUP_GPIO_RANGE_MIN",
+                                                "name": "ESP_HOSTED_HOST_WAKEUP_GPIO_RANGE_MIN",
+                                                "range": null,
+                                                "title": null,
+                                                "type": "int"
+                                            },
+                                            {
+                                                "children": [],
+                                                "depends_on": "ESP_HOSTED_HOST_DEEP_SLEEP_ALLOWED && ESP_HOSTED_ENABLED",
+                                                "help": null,
+                                                "id": "ESP_HOSTED_HOST_WAKEUP_GPIO_RANGE_MAX",
+                                                "name": "ESP_HOSTED_HOST_WAKEUP_GPIO_RANGE_MAX",
+                                                "range": null,
+                                                "title": null,
+                                                "type": "int"
+                                            },
                                             {
                                                 "children": [],
                                                 "depends_on": "ESP_HOSTED_HOST_DEEP_SLEEP_ALLOWED && ESP_HOSTED_ENABLED",

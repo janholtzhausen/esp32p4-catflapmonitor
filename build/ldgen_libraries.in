@@ -179,7 +179,7 @@ $<TARGET_FILE:__idf_espressif__esp_cam_sensor>
 $<TARGET_FILE:__idf_espressif__esp_h264>
 $<TARGET_FILE:__idf_espressif__esp_ipa>
 $<TARGET_FILE:__idf_espressif__usb_host_uvc>
-$<TARGET_FILE:idf::example_video_common>
+$<TARGET_FILE:idf::catflapcam_video_common>
 $<TARGET_FILE:__idf_espressif__esp_video>
 $<TARGET_FILE:__idf_esp_driver_jpeg>
 $<TARGET_FILE:idf::espressif__esp_hosted>
@@ -187,8 +187,7 @@ $<TARGET_FILE:idf::espressif__esp_serial_slave_link>
 $<TARGET_FILE:idf::espressif__eppp_link>
 $<TARGET_FILE:__idf_espressif__esp_serial_slave_link>
 $<TARGET_FILE:idf::espressif__esp_wifi_remote>
-$<TARGET_FILE:idf::protocol_examples_common>
 $<TARGET_FILE:idf::main>
 $<TARGET_FILE:__idf_json>
-$<TARGET_FILE:__idf_example_video_common>
-$<TARGET_FILE:__idf_protocol_examples_common>
+$<TARGET_FILE:__idf_fatfs>
+$<TARGET_FILE:__idf_catflapcam_video_common>

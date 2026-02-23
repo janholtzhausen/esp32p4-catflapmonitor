@@ -1,0 +1,30 @@
+Command: ninja all
+[0/1] Re-running CMake...
+-- git describe returned 'fatal: bad object HEAD
+fatal: 'git status --porcelain=2' failed in submodule components/bootloader/subproject/components/micro-ecc/micro-ecc'
+-- Minimal build - OFF
+-- ccache will be used for faster recompilation
+-- Building ESP-IDF components for target esp32p4
+NOTICE: Skipping optional dependency: espressif/usb
+NOTICE: 
+Following dependencies have new versions available:
+Dependency "espressif/esp_cam_sensor": "1.7.0" -> "2.0.0"
+Dependency "espressif/esp_video": "1.4.1" -> "2.0.0"
+Consider running "idf.py update-dependencies" to update your lock file.
+NOTICE: Processing 15 dependencies:
+NOTICE: [1/15] espressif/cmake_utilities (0.5.3)
+NOTICE: [2/15] espressif/eppp_link (1.1.4)
+NOTICE: [3/15] espressif/esp_cam_sensor (1.7.0)
+NOTICE: [4/15] espressif/esp_h264 (1.0.4)
+NOTICE: [5/15] espressif/esp_hosted (2.11.7)
+NOTICE: [6/15] espressif/esp_ipa (1.3.1)
+NOTICE: [7/15] espressif/esp_new_jpeg (1.0.0)
+NOTICE: [8/15] espressif/esp_sccb_intf (0.0.8)
+NOTICE: [9/15] espressif/esp_serial_slave_link (1.1.2)
+NOTICE: [10/15] espressif/esp_video (1.4.1)
+NOTICE: [11/15] espressif/esp_wifi_remote (1.3.2)
+NOTICE: [12/15] espressif/mdns (1.9.1)
+NOTICE: [13/15] espressif/usb_host_uvc (2.4.1)
+NOTICE: [14/15] espressif/wifi_remote_over_eppp (0.3.1)
+NOTICE: [15/15] idf (5.5.2)
+-- Using new driver components (IDF ≥ 5.0)

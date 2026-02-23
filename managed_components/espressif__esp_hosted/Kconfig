@@ -47,13 +47,13 @@ menu "ESP-Hosted config"
 			depends on SLAVE_IDF_TARGET_ESP32C5
 			bool "ESP32-P4-C5 Core Board with on-board C5"
 
-	config ESP_HOSTED_P4_C6_CORE_BOARD
-		depends on SLAVE_IDF_TARGET_ESP32C6
-		bool "ESP32-P4-C6 Core Board with on-board C6"
+		config ESP_HOSTED_P4_C6_CORE_BOARD
+			depends on SLAVE_IDF_TARGET_ESP32C6
+			bool "ESP32-P4-C6 Core Board with on-board C6"
 
-	config ESP_HOSTED_P4_C61_CORE_BOARD
-		depends on SLAVE_IDF_TARGET_ESP32C61
-		bool "ESP32-P4-C61 Core Board with on-board C61"
+		config ESP_HOSTED_P4_C61_CORE_BOARD
+			depends on SLAVE_IDF_TARGET_ESP32C61
+			bool "ESP32-P4-C61 Core Board with on-board C61"
 
 	endchoice
 
@@ -1652,6 +1652,13 @@ ESP32XX_SPI_HD_CLK_FREQ_RANGE_MAX := 40
 			Disable to custom handle the transport failure in application.
 			A transport failure will always be sent as an ESP_HOSTED_EVENT_TRANSPORT_FAILURE event, irrespective of the setting.
 
+	config ESP_HOSTED_MEM_MONITOR
+		bool "Enable Memory Monitor Interface"
+		default y
+		help
+			Enable the Memory Monitor Interface. Host can query co-processor to get
+			information on heap size or get an event when heap falls below a set threshold.
+
 	config ESP_HOSTED_ENABLE_ITWT
 		bool "Enable iTWT support"
 		depends on SLAVE_SOC_WIFI_HE_SUPPORT
@@ -1660,6 +1667,15 @@ ESP32XX_SPI_HD_CLK_FREQ_RANGE_MAX := 40
 			Enable Wi-Fi iTWT (individual Target Wake Time) APIs on Host. Using the API, Host
 			can instruct the co-processor to negotiate specific wake and sleep schedules with
 			the access point (AP) for lower power consumption.
+
+	config ESP_HOSTED_WIFI_AUTO_CONNECT_ON_STA_START
+		bool "Auto-connect WiFi at host on STA_START event"
+		default y
+		help
+			Automatically trigger WiFi connect from host when slave station starts.
+			Generally should be disabled to give application control over connection timing.
+			When disabled, application must explicitly call esp_wifi_connect() after
+			receiving WIFI_EVENT_STA_START event.
 
 	config ESP_HOSTED_ENABLE_GPIO_EXPANDER
 		bool "Enable GPIO Expander feature on host"
@@ -1973,6 +1989,22 @@ ESP32XX_SPI_HD_CLK_FREQ_RANGE_MAX := 40
 	menu "Host Power Save Configuration"
 		depends on ESP_HOSTED_HOST_DEEP_SLEEP_ALLOWED
 
+		config ESP_HOSTED_HOST_WAKEUP_GPIO_RANGE_MIN
+			int
+			default 6 if ESP_HOSTED_P4_DEV_BOARD_FUNC_BOARD && !ESP_HOSTED_SPI_HD_HOST_INTERFACE
+			default 4 if ESP_HOSTED_P4_DEV_BOARD_FUNC_BOARD && ESP_HOSTED_SPI_HD_HOST_INTERFACE
+			default 2 if ESP_HOSTED_P4_C5_CORE_BOARD
+			default -1 if IDF_TARGET_ESP32P4
+			default -1
+
+		config ESP_HOSTED_HOST_WAKEUP_GPIO_RANGE_MAX
+			int
+			default 6 if ESP_HOSTED_P4_DEV_BOARD_FUNC_BOARD && !ESP_HOSTED_SPI_HD_HOST_INTERFACE
+			default 4 if ESP_HOSTED_P4_DEV_BOARD_FUNC_BOARD && ESP_HOSTED_SPI_HD_HOST_INTERFACE
+			default 2 if ESP_HOSTED_P4_C5_CORE_BOARD
+			default 15 if IDF_TARGET_ESP32P4
+			default 100
+
 		config ESP_HOSTED_HOST_WAKEUP_GPIO
 			int "Host in: Host Wakeup GPIO"
 			default 5 if C2_C5_MODULE_SUB_BOARD
@@ -1984,8 +2016,8 @@ ESP32XX_SPI_HD_CLK_FREQ_RANGE_MAX := 40
 			default 6 if IDF_TARGET_ESP32P4 && !SLAVE_IDF_TARGET_ESP32C6 && !SLAVE_IDF_TARGET_ESP32C5 && !SLAVE_IDF_TARGET_ESP32C61
 			default 1 if IDF_TARGET_ESP32C3
 			default 2 if ESP_HOSTED_P4_C5_CORE_BOARD
-			default -1
-			range -1 15 if IDF_TARGET_ESP32P4
+			default -1 if (ESP_HOSTED_P4_DEV_BOARD_NONE || ESP_HOSTED_P4_C6_CORE_BOARD || ESP_HOSTED_P4_C61_CORE_BOARD)
+			range ESP_HOSTED_HOST_WAKEUP_GPIO_RANGE_MIN ESP_HOSTED_HOST_WAKEUP_GPIO_RANGE_MAX
 			help
 				GPIO number to use for host wakeup from sleep.
 				Set to -1 to disable GPIO wakeup.

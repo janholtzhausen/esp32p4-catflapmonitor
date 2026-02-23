@@ -1,0 +1,8 @@
+Command: cmake -G Ninja -DPYTHON_DEPS_CHECKED=1 -DPYTHON=C:\Users\janh\.espressif\python_env\idf5.5_py3.13_env\Scripts\python.exe -DESP_PLATFORM=1 -DIDF_TARGET=esp32c6 -DCCACHE_ENABLE=1 C:\opt\src\catflapcam
+CMake Error at C:/esp/v5.5.2/esp-idf/tools/cmake/targets.cmake:108 (message):
+   Target 'esp32p4' in sdkconfig 'C:/opt/src/catflapcam/sdkconfig' does not match currently selected IDF_TARGET 'esp32c6'. To change the target, clear the build directory and sdkconfig file, and build the project again.
+Call Stack (most recent call first):
+  C:/esp/v5.5.2/esp-idf/tools/cmake/project.cmake:24 (__target_init)
+  CMakeLists.txt:5 (include)
+
+
