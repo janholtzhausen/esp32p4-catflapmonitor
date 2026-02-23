@@ -125,6 +125,44 @@ Expected responses:
 
 Note: this firmware uses FATFS for SD cards in ESP-IDF. F2FS/LittleFS are not used for the SD snapshot path.
 
+## SD Card Access Details
+
+This project uses ESP-IDF SDMMC host mode + FATFS mount (`esp_vfs_fat_sdmmc_mount`) with explicit reliability guards:
+
+- Host configuration:
+  - `SDMMC_HOST_DEFAULT()` is used
+  - Slot selected by `CATFLAPCAM_SDCARD_SLOT`
+  - Bus width selected by `CATFLAPCAM_SDCARD_BUS_WIDTH`
+  - SD clock capped by `CATFLAPCAM_SDCARD_MAX_FREQ_KHZ`
+
+- Power and signal stability:
+  - Internal pull-ups are enabled (`SDMMC_SLOT_FLAG_INTERNAL_PULLUP`)
+  - Optional on-chip LDO power control is supported via:
+    - `CATFLAPCAM_SDCARD_USE_INTERNAL_LDO`
+    - `CATFLAPCAM_SDCARD_LDO_ID`
+  - This is useful on boards where SD rail sequencing causes init timeouts.
+
+- Mount strategy:
+  - First attempts configured width (typically 4-bit)
+  - If mount fails and width > 1, firmware retries automatically in 1-bit mode
+  - `CATFLAPCAM_SDCARD_FORMAT_IF_MOUNT_FAILED` controls auto-format behavior
+  - Mount point is `CATFLAPCAM_SDCARD_MOUNT_POINT` (default `/sdcard`)
+
+- Runtime storage layout:
+  - Snapshot directory: `/sdcard/snapshots`
+  - File naming: `snap-<seq>-<yyyymmdd-hhmmss>.jpg`
+  - Sequence remains monotonic and is used for deterministic oldest-file eviction
+  - Ring retention is implemented in firmware, not filesystem-level
+
+- Why ring-by-file-count is used:
+  - Predictable retention behavior
+  - Bounded directory growth for embedded list/scan operations
+  - Better control of RAM/latency during snapshot indexing and gallery listing
+
+- Common pitfall (ESP32-P4 + hosted Wi-Fi systems):
+  - Wi-Fi hosted transport and SD card can contend for SDMMC resources if slot wiring/config is incorrect.
+  - Keep SD slot selection aligned with board design and hosted transport configuration.
+
 ## Reliability Notes
 
 - Wi-Fi-first runtime (Ethernet path removed).
@@ -146,3 +184,23 @@ Note: this firmware uses FATFS for SD cards in ESP-IDF. F2FS/LittleFS are not us
 
 - Snapshot gallery issues  
   Confirm SD storage is mounted and `/api/snapshots` returns valid JSON.
+
+## TODO
+
+- Teachable Machine / cloud workflow:
+  - Add optional upload endpoint mode for pushing selected snapshots to a Teachable Machine-compatible collector.
+  - Keep local SD snapshot as source-of-truth, with upload as a secondary async task.
+  - Add retry/backoff queue and upload status metadata per snapshot.
+
+- On-device inference (tiny tensor / YOLO):
+  - Add lightweight on-device model pipeline for immediate cat identification at capture time.
+  - Prioritize "known cat" vs "unknown/intruder cat" classification with low-latency execution.
+  - Add configurable confidence thresholds and debounce logic to reduce false alerts.
+
+- MQTT integration:
+  - Publish real-time events for:
+    - `catflapcam/cat/known`
+    - `catflapcam/cat/intruder`
+    - `catflapcam/system/error`
+  - Include snapshot filename, confidence, timestamp, and source index in message payload.
+  - Add broker auth/TLS configuration and offline queueing for intermittent Wi-Fi.
